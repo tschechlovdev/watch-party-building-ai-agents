@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[oc]
+*.egg-info
+.venv/
+build/
+dist/
+wheels/
+
+# Database
+*.db
+*.sqlite
+
+# Node / Frontend
+node_modules/
+todo-app/frontend/dist/
+todo-app/frontend/dist-ssr/
+*.local
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Bob
+.bob/
+
+# Test cache
+.pytest_cache/
