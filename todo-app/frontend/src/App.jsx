@@ -2,10 +2,13 @@ import { useState, useEffect } from 'react'
 import { getTodos, createTodo, updateTodo, deleteTodo } from './api'
 import AddTodo from './components/AddTodo'
 import TodoList from './components/TodoList'
+import KanbanBoard from './components/KanbanBoard'
+import ViewToggle from './components/ViewToggle'
 
 export default function App() {
   const [todos, setTodos] = useState([])
   const [error, setError] = useState(null)
+  const [view, setView] = useState('list')
 
   useEffect(() => {
     getTodos()
@@ -31,6 +34,15 @@ export default function App() {
     }
   }
 
+  async function handleStatusChange(id, newStatus) {
+    try {
+      const updated = await updateTodo(id, { status: newStatus })
+      setTodos((prev) => prev.map((t) => (t.id === id ? updated : t)))
+    } catch {
+      setError('Failed to update todo status.')
+    }
+  }
+
   async function handleDelete(id) {
     try {
       await deleteTodo(id)
@@ -42,11 +54,14 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
-      <div className="mx-auto w-full max-w-md">
+      <div className="mx-auto w-full max-w-2xl">
 
-        <h1 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
-          My Todos
-        </h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-semibold text-gray-800">
+            My Todos
+          </h1>
+          <ViewToggle view={view} onViewChange={setView} />
+        </div>
 
         {error && (
           <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-2
@@ -62,21 +77,37 @@ export default function App() {
           </div>
         )}
 
-        <div className="mb-4">
-          <AddTodo onAdd={handleAdd} />
-        </div>
-
-        <TodoList
-          todos={todos}
-          onUpdate={handleUpdate}
-          onDelete={handleDelete}
-        />
-
-        {todos.length > 0 && (
-          <p className="mt-4 text-center text-xs text-gray-400">
-            {todos.filter((t) => t.completed).length} / {todos.length} completed
+        {view === 'list' ? (
+          <div className="mb-4">
+            <AddTodo onAdd={handleAdd} />
+          </div>
+        ) : (
+          <p className="mb-4 text-xs text-gray-400 text-center">
+            Switch to List view to add todos
           </p>
         )}
+
+        {view === 'list' ? (
+          <>
+            <TodoList
+              todos={todos}
+              onUpdate={handleUpdate}
+              onDelete={handleDelete}
+            />
+            {todos.length > 0 && (
+              <p className="mt-4 text-center text-xs text-gray-400">
+                {todos.filter((t) => t.completed).length} / {todos.length} completed
+              </p>
+            )}
+          </>
+        ) : (
+          <KanbanBoard
+            todos={todos}
+            onStatusChange={handleStatusChange}
+            onDelete={handleDelete}
+          />
+        )}
+
       </div>
     </div>
   )
