@@ -148,28 +148,84 @@ _This section will be populated during the demo run (Sub-Task 7)._
 
 ---
 
-## Future Requirements
+## GitHub Integration
 
-### GitHub Integration
+The workflow supports two participation paths:
 
-The current workflow produces code changes directly in the repository but does not open a GitHub Issue or create a Pull Request automatically. The full intended flow from `enhancement_spec.md` ends with:
+### Path A — Full GitHub Integration (recommended for engineers)
+
+Requires a GitHub account, a fork of the repository, and a Personal Access Token (PAT).
+
+**1. Fork the repository**
+
+Fork `https://github.com/tschechlovdev/watch-party-building-ai-agents` and clone your fork.
+
+**2. Create a PAT**
+
+GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens
+
+Required permissions on your fork:
+- Issues: Read and write
+- Pull requests: Read and write
+- Contents: Read and write
+- Metadata: Read (auto-selected)
+
+**3. Add the GitHub MCP server to Bob**
+
+Edit `.bob/mcp.json` and add:
+
+```json
+"github": {
+  "type": "stdio",
+  "command": "npx",
+  "args": ["-y", "@modelcontextprotocol/server-github"],
+  "env": {
+    "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+  },
+  "disabled": false
+}
+```
+
+Set `GITHUB_PERSONAL_ACCESS_TOKEN` to your PAT, or export it as an environment variable
+(`export GITHUB_TOKEN=ghp_...`) and reference it as `${GITHUB_TOKEN}` in `mcp.json`.
+
+> ⚠️ **Never commit `.bob/mcp.json` with a literal PAT.** Add it to `.gitignore` or always use
+> the `${GITHUB_TOKEN}` environment variable reference.
+
+**4. Restart Bob** so the new MCP server is picked up.
+
+**5. After the Reviewer approves**, ask Bob (in any mode):
 
 ```
-Improved Implementation → Pull Request → Merge
+Create a GitHub issue for this feature request using feature-requests/add-priorities.md,
+then commit all changes, push to enhancement, and open a PR referencing the new issue.
 ```
 
-Enabling this final step requires one of the following:
+Bob will use the GitHub MCP tools (`create_issue`, `create_pull_request`) alongside the
+shell tools (`git add`, `git commit`, `git push`).
 
-- **GitHub MCP server** — connects Bob to the GitHub API so it can create issues and open PRs as tool calls within any mode. This is the preferred approach for a seamless in-session experience.
-- **`gh` CLI** — the official GitHub CLI; allows Bob's engineer or reviewer mode to run `gh pr create` via shell execution tools after the implementation is complete.
+---
 
-This is a **planned next step** after the core workflow is validated end-to-end. It is listed as a non-goal in the current implementation plan and should be treated as an enhancement once the PM → Architect → Engineer → Reviewer loop is stable.
+### Path B — Markdown Only (no GitHub account needed)
 
-Other potential future extensions (from `enhancement_spec.md`):
+Run the full PM → Architect → Engineer → Reviewer workflow and produce real code changes.
+The only difference is the final GitHub step is done manually (or skipped).
+
+After the Reviewer approves:
+```bash
+git add .
+git commit -m "feat: add priorities"
+git push origin enhancement
+# Then open a PR manually at github.com
+```
+
+---
+
+## Future Extensions
 
 - Subagents for parallelising tasks (e.g. running tests while the reviewer reads code)
-- Bob hooks for automating handoff triggers
+- Bob hooks for automating handoff triggers (auto-switch mode on front matter change)
 - Security review agent
-- Testing agent
+- Testing agent (frontend tests with Playwright or Vitest)
 - UI generation agent
 - Enterprise deployment patterns
