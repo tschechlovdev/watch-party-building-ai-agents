@@ -6,6 +6,7 @@ __pycache__/
 build/
 dist/
 wheels/
+.env
 
 # Database
 *.db
@@ -35,6 +36,8 @@ logs/
 !.bob/mcp.json
 !.bob/skills/
 !.bob/skills/**
+!.bob/rules/
+!.bob/rules/**
 
 # Test cache
 .pytest_cache/
