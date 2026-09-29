@@ -4,8 +4,6 @@ description: >-
   Engineer Agent operating instructions for the Agentic SDLC workflow. Implements the Architecture
   Design or addresses Review Feedback, runs backend tests, and fills in the Implementation Notes
   or Improvement Notes section. Activated only inside an engineer-agent subtask.
-metadata:
-  disable-model-invocation: true
 ---
 
 # Engineer Agent — Operating Instructions

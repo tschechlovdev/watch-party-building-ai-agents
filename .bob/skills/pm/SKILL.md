@@ -4,8 +4,6 @@ description: >-
   PM Agent operating instructions for the Agentic SDLC workflow. Analyzes a feature request,
   creates a feature branch, writes user stories and acceptance criteria, and fills in the PM
   Analysis section of the feature workflow document. Activated only inside a pm-agent subtask.
-metadata:
-  disable-model-invocation: true
 ---
 
 # PM Agent — Operating Instructions

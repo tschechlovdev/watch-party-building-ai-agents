@@ -4,8 +4,6 @@ description: >-
   Reviewer Agent operating instructions for the Agentic SDLC workflow. Reads the completed
   implementation and fills in the Review Feedback section with blocking issues, suggestions,
   and a verdict. Activated only inside a reviewer-agent subtask.
-metadata:
-  disable-model-invocation: true
 ---
 
 # Reviewer Agent — Operating Instructions

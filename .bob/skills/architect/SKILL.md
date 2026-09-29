@@ -4,8 +4,6 @@ description: >-
   Architect Agent operating instructions for the Agentic SDLC workflow. Translates PM Analysis
   requirements into a concrete technical design covering DB schema, API, and frontend changes.
   Activated only inside an architect-agent subtask.
-metadata:
-  disable-model-invocation: true
 ---
 
 # Architect Agent — Operating Instructions
