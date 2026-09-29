@@ -29,8 +29,12 @@ logs/
 !.vscode/extensions.json
 .idea/
 
-# Bob
+# Bob — ignore everything except agent config
 .bob/
+!.bob/custom_modes.yaml
+!.bob/mcp.json
+!.bob/skills/
+!.bob/skills/**
 
 # Test cache
 .pytest_cache/
