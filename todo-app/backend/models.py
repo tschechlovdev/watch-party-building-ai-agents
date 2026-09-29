@@ -20,4 +20,11 @@ def init_db():
                 created_at TEXT    NOT NULL DEFAULT (datetime('now'))
             )
         """)
+        # Add status column if it doesn't exist yet (safe on both fresh and existing DBs)
+        try:
+            conn.execute(
+                "ALTER TABLE todos ADD COLUMN status TEXT NOT NULL DEFAULT 'todo'"
+            )
+        except Exception:
+            pass  # Column already exists — ignore
         conn.commit()

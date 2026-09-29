@@ -52,6 +52,11 @@ class TestCreateTodo:
         assert "id" in body
         assert "created_at" in body
 
+    def test_new_todo_has_status_todo(self, client):
+        resp = client.post("/api/todos", json={"title": "New task"})
+        assert resp.status_code == 201
+        assert resp.get_json()["status"] == "todo"
+
     def test_strips_whitespace_from_title(self, client):
         resp = client.post("/api/todos", json={"title": "  Trimmed  "})
         assert resp.status_code == 201
@@ -113,6 +118,71 @@ class TestUpdateTodo:
         todo = self._create(client)
         resp = client.put(f"/api/todos/{todo['id']}", json={"title": "  "})
         assert resp.status_code == 400
+
+    # --- status field tests ---
+
+    def test_set_status_in_progress(self, client):
+        todo = self._create(client)
+        resp = client.put(f"/api/todos/{todo['id']}", json={"status": "in_progress"})
+        assert resp.status_code == 200
+        body = resp.get_json()
+        assert body["status"] == "in_progress"
+        assert body["completed"] is False
+
+    def test_set_status_done_sets_completed_true(self, client):
+        todo = self._create(client)
+        resp = client.put(f"/api/todos/{todo['id']}", json={"status": "done"})
+        assert resp.status_code == 200
+        body = resp.get_json()
+        assert body["status"] == "done"
+        assert body["completed"] is True
+
+    def test_set_status_todo_sets_completed_false(self, client):
+        todo = self._create(client)
+        # First mark done
+        client.put(f"/api/todos/{todo['id']}", json={"status": "done"})
+        # Then move back to todo
+        resp = client.put(f"/api/todos/{todo['id']}", json={"status": "todo"})
+        assert resp.status_code == 200
+        body = resp.get_json()
+        assert body["status"] == "todo"
+        assert body["completed"] is False
+
+    def test_set_completed_true_sets_status_done(self, client):
+        todo = self._create(client)
+        resp = client.put(f"/api/todos/{todo['id']}", json={"completed": True})
+        assert resp.status_code == 200
+        body = resp.get_json()
+        assert body["completed"] is True
+        assert body["status"] == "done"
+
+    def test_set_completed_false_sets_status_todo(self, client):
+        todo = self._create(client)
+        # First complete it
+        client.put(f"/api/todos/{todo['id']}", json={"completed": True})
+        # Then uncomplete
+        resp = client.put(f"/api/todos/{todo['id']}", json={"completed": False})
+        assert resp.status_code == 200
+        body = resp.get_json()
+        assert body["completed"] is False
+        assert body["status"] == "todo"
+
+    def test_invalid_status_returns_400(self, client):
+        todo = self._create(client)
+        resp = client.put(f"/api/todos/{todo['id']}", json={"status": "urgent"})
+        assert resp.status_code == 400
+        assert "error" in resp.get_json()
+
+    def test_status_takes_precedence_over_completed(self, client):
+        """When both status and completed are provided, status wins."""
+        todo = self._create(client)
+        # status=in_progress should override completed=True
+        resp = client.put(f"/api/todos/{todo['id']}",
+                          json={"status": "in_progress", "completed": True})
+        assert resp.status_code == 200
+        body = resp.get_json()
+        assert body["status"] == "in_progress"
+        assert body["completed"] is False
 
 
 # ---------------------------------------------------------------------------
