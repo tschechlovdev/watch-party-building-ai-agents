@@ -1,11 +1,26 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { getTodos, createTodo, updateTodo, deleteTodo } from './api'
 import AddTodo from './components/AddTodo'
 import TodoList from './components/TodoList'
+import SearchFilter from './components/SearchFilter'
 
 export default function App() {
   const [todos, setTodos] = useState([])
   const [error, setError] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filter, setFilter] = useState('All')
+
+  const filteredTodos = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase()
+    return todos.filter((t) => {
+      const matchesFilter =
+        filter === 'All' ||
+        (filter === 'Active' && !t.completed) ||
+        (filter === 'Completed' && t.completed)
+      const matchesSearch = !term || t.title.toLowerCase().includes(term)
+      return matchesFilter && matchesSearch
+    })
+  }, [todos, searchTerm, filter])
 
   useEffect(() => {
     getTodos()
@@ -66,15 +81,24 @@ export default function App() {
           <AddTodo onAdd={handleAdd} />
         </div>
 
+        <div className="mb-4">
+          <SearchFilter
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            filter={filter}
+            onFilterChange={setFilter}
+          />
+        </div>
+
         <TodoList
-          todos={todos}
+          todos={filteredTodos}
           onUpdate={handleUpdate}
           onDelete={handleDelete}
         />
 
-        {todos.length > 0 && (
+        {filteredTodos.length > 0 && (
           <p className="mt-4 text-center text-xs text-gray-400">
-            {todos.filter((t) => t.completed).length} / {todos.length} completed
+            {filteredTodos.filter((t) => t.completed).length} / {filteredTodos.length} completed
           </p>
         )}
       </div>
