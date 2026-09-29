@@ -3,6 +3,7 @@ feature: ""
 requester: ""
 status: "in-progress"
 current-role: "pm"
+needs-architect: true
 ---
 
 # Feature Workflow
@@ -32,6 +33,7 @@ _(paste feature request here)_
 - List 3–6 acceptance criteria as checkboxes.
 - List anything explicitly out of scope.
 - Do NOT propose any technical approach — focus on what the user needs, not how to build it.
+- Set needs-architect in the front matter to true or false based on your architect recommendation.
 - When done, set current-role to "architect" in the front matter.
 -->
 
@@ -46,6 +48,10 @@ _(PM agent fills this in)_
 ### Out of Scope
 
 _(PM agent fills this in)_
+
+### Architect Recommendation
+
+_(PM agent fills this in — needs-architect: true/false with rationale)_
 
 ---
 
