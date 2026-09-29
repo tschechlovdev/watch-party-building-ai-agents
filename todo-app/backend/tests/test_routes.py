@@ -298,3 +298,82 @@ class TestMigrationBackfill:
         assert rows[0]["status"] == "todo",  "Active task should be backfilled to 'todo'"
         assert rows[1]["status"] == "done",  "Completed task should be backfilled to 'done'"
         result_conn.close()
+
+
+# ---------------------------------------------------------------------------
+# GET /api/todos/stats
+# ---------------------------------------------------------------------------
+
+class TestGetStats:
+    def test_empty_db_returns_all_zeros(self, client):
+        resp = client.get("/api/todos/stats")
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data == {
+            "total": 0,
+            "completed": 0,
+            "active": 0,
+            "completion_rate": 0.0,
+            "created_last_7_days": 0,
+            "completed_last_7_days": 0,
+        }
+
+    def test_correct_totals_and_completion_rate(self, client):
+        # 2 active, 1 completed
+        client.post("/api/todos", json={"title": "Task A"})
+        client.post("/api/todos", json={"title": "Task B"})
+        client.post("/api/todos", json={"title": "Task C", "status": "done"})
+
+        resp = client.get("/api/todos/stats")
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data["total"] == 3
+        assert data["completed"] == 1
+        assert data["active"] == 2
+        assert data["completion_rate"] == round(1 / 3 * 100, 1)
+
+    def test_all_completed_gives_100_percent(self, client):
+        client.post("/api/todos", json={"title": "Done 1", "status": "done"})
+        client.post("/api/todos", json={"title": "Done 2", "status": "done"})
+
+        resp = client.get("/api/todos/stats")
+        data = resp.get_json()
+        assert data["total"] == 2
+        assert data["completed"] == 2
+        assert data["active"] == 0
+        assert data["completion_rate"] == 100.0
+
+    def test_recently_created_todos_counted(self, client):
+        # Todos created via the API are always within the last 7 days
+        client.post("/api/todos", json={"title": "New 1"})
+        client.post("/api/todos", json={"title": "New 2"})
+
+        resp = client.get("/api/todos/stats")
+        data = resp.get_json()
+        assert data["created_last_7_days"] == 2
+
+    def test_completed_last_7_days_counts_completed_recent_todos(self, client):
+        client.post("/api/todos", json={"title": "Recent done", "status": "done"})
+        client.post("/api/todos", json={"title": "Recent active"})
+
+        resp = client.get("/api/todos/stats")
+        data = resp.get_json()
+        assert data["completed_last_7_days"] == 1
+
+    def test_old_todos_not_counted_in_7_day_window(self, client):
+        """Todos with a created_at in the distant past should not appear in 7-day counts."""
+        import sqlite3, models
+        # Insert an old completed todo directly into the DB
+        with sqlite3.connect(models.DB_PATH) as conn:
+            conn.execute(
+                "INSERT INTO todos (title, completed, status, created_at) VALUES (?, 1, 'done', ?)",
+                ("Old done", "2000-01-01 00:00:00"),
+            )
+            conn.commit()
+
+        resp = client.get("/api/todos/stats")
+        data = resp.get_json()
+        assert data["total"] == 1
+        assert data["completed"] == 1
+        assert data["created_last_7_days"] == 0
+        assert data["completed_last_7_days"] == 0

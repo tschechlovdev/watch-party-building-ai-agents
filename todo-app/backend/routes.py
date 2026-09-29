@@ -40,6 +40,35 @@ def todo_to_dict(row):
     }
 
 
+@todos_bp.get("/stats")
+def get_stats():
+    with get_db() as conn:
+        total = conn.execute("SELECT COUNT(*) FROM todos").fetchone()[0]
+        completed = conn.execute(
+            "SELECT COUNT(*) FROM todos WHERE completed = 1"
+        ).fetchone()[0]
+        active = conn.execute(
+            "SELECT COUNT(*) FROM todos WHERE completed = 0"
+        ).fetchone()[0]
+        created_last_7_days = conn.execute(
+            "SELECT COUNT(*) FROM todos WHERE created_at >= datetime('now', '-7 days')"
+        ).fetchone()[0]
+        completed_last_7_days = conn.execute(
+            "SELECT COUNT(*) FROM todos WHERE completed = 1 AND created_at >= datetime('now', '-7 days')"
+        ).fetchone()[0]
+
+    completion_rate = round(completed / total * 100, 1) if total > 0 else 0.0
+
+    return jsonify({
+        "total": total,
+        "completed": completed,
+        "active": active,
+        "completion_rate": completion_rate,
+        "created_last_7_days": created_last_7_days,
+        "completed_last_7_days": completed_last_7_days,
+    }), 200
+
+
 @todos_bp.get("")
 def list_todos():
     with get_db() as conn:

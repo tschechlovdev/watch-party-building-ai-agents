@@ -1,20 +1,33 @@
 import { useState, useEffect } from 'react'
-import { getTodos, createTodo, updateTodo, deleteTodo } from './api'
+import { getTodos, createTodo, updateTodo, deleteTodo, getStats } from './api'
 import AddTodo from './components/AddTodo'
 import TodoList from './components/TodoList'
 import KanbanBoard from './components/KanbanBoard'
 import ViewToggle from './components/ViewToggle'
+import AnalyticsDashboard from './components/AnalyticsDashboard'
 
 export default function App() {
   const [todos, setTodos] = useState([])
   const [error, setError] = useState(null)
   const [view, setView] = useState('list')
+  const [stats, setStats] = useState(null)
+  const [statsLoading, setStatsLoading] = useState(false)
+  const [statsError, setStatsError] = useState(null)
 
   useEffect(() => {
     getTodos()
       .then(setTodos)
       .catch(() => setError('Failed to load todos.'))
   }, [])
+
+  useEffect(() => {
+    if (view !== 'analytics') return
+    setStatsLoading(true)
+    setStatsError(null)
+    getStats()
+      .then((data) => { setStats(data); setStatsLoading(false) })
+      .catch(() => { setStatsError('Failed to load analytics.'); setStatsLoading(false) })
+  }, [view])
 
   async function handleAdd(title) {
     try {
@@ -77,35 +90,41 @@ export default function App() {
           </div>
         )}
 
-        {view === 'list' ? (
-          <div className="mb-4">
-            <AddTodo onAdd={handleAdd} />
-          </div>
+        {view === 'analytics' ? (
+          <AnalyticsDashboard stats={stats} loading={statsLoading} error={statsError} />
         ) : (
-          <p className="mb-4 text-xs text-gray-400 text-center">
-            Switch to List view to add todos
-          </p>
-        )}
-
-        {view === 'list' ? (
           <>
-            <TodoList
-              todos={todos}
-              onUpdate={handleUpdate}
-              onDelete={handleDelete}
-            />
-            {todos.length > 0 && (
-              <p className="mt-4 text-center text-xs text-gray-400">
-                {todos.filter((t) => t.completed).length} / {todos.length} completed
+            {view === 'list' ? (
+              <div className="mb-4">
+                <AddTodo onAdd={handleAdd} />
+              </div>
+            ) : (
+              <p className="mb-4 text-xs text-gray-400 text-center">
+                Switch to List view to add todos
               </p>
             )}
+
+            {view === 'list' ? (
+              <>
+                <TodoList
+                  todos={todos}
+                  onUpdate={handleUpdate}
+                  onDelete={handleDelete}
+                />
+                {todos.length > 0 && (
+                  <p className="mt-4 text-center text-xs text-gray-400">
+                    {todos.filter((t) => t.completed).length} / {todos.length} completed
+                  </p>
+                )}
+              </>
+            ) : (
+              <KanbanBoard
+                todos={todos}
+                onStatusChange={handleStatusChange}
+                onDelete={handleDelete}
+              />
+            )}
           </>
-        ) : (
-          <KanbanBoard
-            todos={todos}
-            onStatusChange={handleStatusChange}
-            onDelete={handleDelete}
-          />
         )}
 
       </div>
