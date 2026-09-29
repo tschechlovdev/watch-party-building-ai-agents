@@ -13,6 +13,8 @@ The project is built **incrementally in two phases**:
 
 Start with Phase 1. The core agents work standalone and are the foundation everything else builds on.
 
+> 📋 **Workshop participants:** see [`docs/INSTRUCTIONS.md`](docs/INSTRUCTIONS.md) for the step-by-step setup guide.
+
 ---
 
 ## How it works
