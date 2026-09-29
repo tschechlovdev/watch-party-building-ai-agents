@@ -129,18 +129,24 @@ That is all. You will run the full workflow and produce a real code change. The 
 
 > "Welcome. Today we are going to build an agentic software development lifecycle — a mini development team made of Bob modes — and use it to ship a real feature into a real Todo application. By the end of the session you will have seen PM analysis, architecture design, implementation, and code review all happen inside Bob, coordinated by a single markdown document."
 
+> "We are building this incrementally across two phases. Today covers **Phase 1 — the core agents**: PM, Architect, Engineer, and Reviewer. Each runs as a separate Bob mode and hands off via a shared workflow document. Phase 2 — the Orchestrator — is a single-prompt driver that runs all of those automatically; we will cover that separately."
+
 ---
 
 ## Part 1 — What Are We Building? (5 min)
 
 > "Let me show you the structure."
 
-**[FACILITATOR]** Open `docs/NOTES.md` and walk through:
+**[FACILITATOR]** Open `sdlc_agents_spec.md` and walk through:
+- The two-phase build: core agents first, Orchestrator later
 - The four agent roles (PM → Architect → Engineer → Reviewer)
+- The PM Agent's first responsibility: create a local git feature branch before writing anything
+
+Then open `docs/NOTES.md` and walk through:
 - The shared handoff document (`feature-workflows/`)
 - The feature request catalogue (`feature-requests/`)
 
-> "The key idea: no orchestration framework, no inter-process communication. Every agent reads the document, appends its section, and sets a `current-role` field in the front matter to signal who goes next. That's it."
+> "The key idea: no orchestration framework, no inter-process communication. Every agent reads the document, appends its section, and sets a `current-role` field in the front matter to signal who goes next. That's it. The Orchestrator we'll show later simply automates those manual mode switches — but the core workflow is fully functional without it."
 
 ---
 
@@ -348,6 +354,7 @@ You can do this manually:
 
 | Extension | How |
 |---|---|
+| **Phase 2 — Orchestrator Agent** | Switch to **Orchestrator Agent** mode and send a single feature request — it drives PM → Architect → Engineer → Reviewer automatically as subtasks. Spec: `orchestrator_agent_spec.md` |
 | **Run a second feature** | Pick any file from `feature-requests/` and repeat Parts 3–7 |
 | **Add a Security Review agent** | Add a new mode + skill that reads Implementation Notes and checks the security checklist from the project rules |
 | **Automate handoffs with Bob hooks** | Use Bob's lifecycle hooks to auto-trigger the next agent on session end |

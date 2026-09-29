@@ -4,6 +4,15 @@ A watch-party project that demonstrates how to build a mini AI development team 
 
 The workflow ships a real feature into a real Todo application (Flask backend + React frontend) end-to-end.
 
+The project is built **incrementally in two phases**:
+
+| Phase | Spec | What it adds |
+|---|---|---|
+| **Phase 1 — Core agents** | [`sdlc_agents_spec.md`](sdlc_agents_spec.md) | PM · Architect · Engineer · Reviewer, handoff document, feature branch creation |
+| **Phase 2 — Orchestrator** | [`orchestrator_agent_spec.md`](orchestrator_agent_spec.md) | Single-prompt pipeline driver that runs all agents automatically as subtasks |
+
+Start with Phase 1. The core agents work standalone and are the foundation everything else builds on.
+
 ---
 
 ## How it works
@@ -245,6 +254,7 @@ git push origin enhancement
 
 | Extension | How |
 |---|---|
+| **Phase 2 — Orchestrator Agent** | Switch to **Orchestrator Agent** mode and send a single feature request — it drives PM → Architect → Engineer → Reviewer automatically. Spec: [`orchestrator_agent_spec.md`](orchestrator_agent_spec.md) |
 | Run another feature | Pick any file from `feature-requests/` and repeat the workflow |
 | Add a Security Review agent | New mode + skill that checks the security checklist from the project rules |
 | Automate handoffs | Use Bob lifecycle hooks to trigger the next agent automatically |
