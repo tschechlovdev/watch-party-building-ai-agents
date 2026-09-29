@@ -1,33 +1,7 @@
 from flask import Blueprint, jsonify, request
-from models import get_db, VALID_STATUSES
+from models import get_db
 
 todos_bp = Blueprint("todos", __name__, url_prefix="/api/todos")
-
-
-def _resolve_status_completed(status=None, completed=None, existing_status="todo"):
-    """Apply the status/completed sync rule.
-
-    Rules (status takes precedence when both are provided):
-    - status='done'                  → completed=True
-    - status='todo'|'in_progress'    → completed=False
-    - completed=True  (no status)    → status='done'
-    - completed=False (no status)    → status='todo' unless existing is 'in_progress'
-    Returns (resolved_status, resolved_completed_int).
-    """
-    if status is not None:
-        resolved_status = status
-        resolved_completed = 1 if status == "done" else 0
-    elif completed is not None:
-        if completed:
-            resolved_status = "done"
-            resolved_completed = 1
-        else:
-            # Preserve in_progress when un-completing
-            resolved_status = existing_status if existing_status == "in_progress" else "todo"
-            resolved_completed = 0
-    else:
-        return None, None  # Nothing to resolve
-    return resolved_status, resolved_completed
 
 
 def todo_to_dict(row):
@@ -35,38 +9,8 @@ def todo_to_dict(row):
         "id": row["id"],
         "title": row["title"],
         "completed": bool(row["completed"]),
-        "status": row["status"],
         "created_at": row["created_at"],
     }
-
-
-@todos_bp.get("/stats")
-def get_stats():
-    with get_db() as conn:
-        total = conn.execute("SELECT COUNT(*) FROM todos").fetchone()[0]
-        completed = conn.execute(
-            "SELECT COUNT(*) FROM todos WHERE completed = 1"
-        ).fetchone()[0]
-        active = conn.execute(
-            "SELECT COUNT(*) FROM todos WHERE completed = 0"
-        ).fetchone()[0]
-        created_last_7_days = conn.execute(
-            "SELECT COUNT(*) FROM todos WHERE created_at >= datetime('now', '-7 days')"
-        ).fetchone()[0]
-        completed_last_7_days = conn.execute(
-            "SELECT COUNT(*) FROM todos WHERE completed = 1 AND created_at >= datetime('now', '-7 days')"
-        ).fetchone()[0]
-
-    completion_rate = round(completed / total * 100, 1) if total > 0 else 0.0
-
-    return jsonify({
-        "total": total,
-        "completed": completed,
-        "active": active,
-        "completion_rate": completion_rate,
-        "created_last_7_days": created_last_7_days,
-        "completed_last_7_days": completed_last_7_days,
-    }), 200
 
 
 @todos_bp.get("")
@@ -85,16 +29,9 @@ def create_todo():
     if not title:
         return jsonify({"error": "title is required"}), 400
 
-    status = data.get("status", "todo")
-    if status not in VALID_STATUSES:
-        return jsonify({"error": f"status must be one of: {', '.join(VALID_STATUSES)}"}), 400
-
-    completed = 1 if status == "done" else 0
-
     with get_db() as conn:
         cursor = conn.execute(
-            "INSERT INTO todos (title, completed, status) VALUES (?, ?, ?)",
-            (title, completed, status),
+            "INSERT INTO todos (title) VALUES (?)", (title,)
         )
         conn.commit()
         row = conn.execute(
@@ -114,29 +51,15 @@ def update_todo(todo_id):
         if existing is None:
             return jsonify({"error": "Not found"}), 404
 
+        # Build update from only the fields provided
         fields = {}
-
         if "title" in data:
             title = (data["title"] or "").strip()
             if not title:
                 return jsonify({"error": "title must not be empty"}), 400
             fields["title"] = title
-
-        # Validate status if provided
-        new_status = data.get("status")
-        if new_status is not None and new_status not in VALID_STATUSES:
-            return jsonify({"error": f"status must be one of: {', '.join(VALID_STATUSES)}"}), 400
-
-        new_completed = data.get("completed")
-
-        resolved_status, resolved_completed = _resolve_status_completed(
-            status=new_status,
-            completed=new_completed,
-            existing_status=existing["status"],
-        )
-        if resolved_status is not None:
-            fields["status"] = resolved_status
-            fields["completed"] = resolved_completed
+        if "completed" in data:
+            fields["completed"] = 1 if data["completed"] else 0
 
         if fields:
             set_clause = ", ".join(f"{k} = ?" for k in fields)

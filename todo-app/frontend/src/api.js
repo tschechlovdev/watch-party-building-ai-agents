@@ -21,5 +21,3 @@ export const updateTodo = (id, fields) =>
 
 export const deleteTodo = (id) =>
   request(`${BASE}/${id}`, { method: 'DELETE' })
-
-export const getStats = () => request(`${BASE}/stats`)

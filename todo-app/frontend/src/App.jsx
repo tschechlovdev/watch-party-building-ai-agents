@@ -1,33 +1,17 @@
 import { useState, useEffect } from 'react'
-import { getTodos, createTodo, updateTodo, deleteTodo, getStats } from './api'
+import { getTodos, createTodo, updateTodo, deleteTodo } from './api'
 import AddTodo from './components/AddTodo'
 import TodoList from './components/TodoList'
-import KanbanBoard from './components/KanbanBoard'
-import ViewToggle from './components/ViewToggle'
-import AnalyticsDashboard from './components/AnalyticsDashboard'
 
 export default function App() {
   const [todos, setTodos] = useState([])
   const [error, setError] = useState(null)
-  const [view, setView] = useState('list')
-  const [stats, setStats] = useState(null)
-  const [statsLoading, setStatsLoading] = useState(false)
-  const [statsError, setStatsError] = useState(null)
 
   useEffect(() => {
     getTodos()
       .then(setTodos)
       .catch(() => setError('Failed to load todos.'))
   }, [])
-
-  useEffect(() => {
-    if (view !== 'analytics') return
-    setStatsLoading(true)
-    setStatsError(null)
-    getStats()
-      .then((data) => { setStats(data); setStatsLoading(false) })
-      .catch(() => { setStatsError('Failed to load analytics.'); setStatsLoading(false) })
-  }, [view])
 
   async function handleAdd(title) {
     try {
@@ -47,15 +31,6 @@ export default function App() {
     }
   }
 
-  async function handleStatusChange(id, newStatus) {
-    try {
-      const updated = await updateTodo(id, { status: newStatus })
-      setTodos((prev) => prev.map((t) => (t.id === id ? updated : t)))
-    } catch {
-      setError('Failed to update todo status.')
-    }
-  }
-
   async function handleDelete(id) {
     try {
       await deleteTodo(id)
@@ -67,14 +42,11 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
-      <div className="mx-auto w-full max-w-2xl">
+      <div className="mx-auto w-full max-w-md">
 
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-semibold text-gray-800">
-            My Todos
-          </h1>
-          <ViewToggle view={view} onViewChange={setView} />
-        </div>
+        <h1 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
+          My Todos
+        </h1>
 
         {error && (
           <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-2
@@ -90,43 +62,21 @@ export default function App() {
           </div>
         )}
 
-        {view === 'analytics' ? (
-          <AnalyticsDashboard stats={stats} loading={statsLoading} error={statsError} />
-        ) : (
-          <>
-            {view === 'list' ? (
-              <div className="mb-4">
-                <AddTodo onAdd={handleAdd} />
-              </div>
-            ) : (
-              <p className="mb-4 text-xs text-gray-400 text-center">
-                Switch to List view to add todos
-              </p>
-            )}
+        <div className="mb-4">
+          <AddTodo onAdd={handleAdd} />
+        </div>
 
-            {view === 'list' ? (
-              <>
-                <TodoList
-                  todos={todos}
-                  onUpdate={handleUpdate}
-                  onDelete={handleDelete}
-                />
-                {todos.length > 0 && (
-                  <p className="mt-4 text-center text-xs text-gray-400">
-                    {todos.filter((t) => t.completed).length} / {todos.length} completed
-                  </p>
-                )}
-              </>
-            ) : (
-              <KanbanBoard
-                todos={todos}
-                onStatusChange={handleStatusChange}
-                onDelete={handleDelete}
-              />
-            )}
-          </>
+        <TodoList
+          todos={todos}
+          onUpdate={handleUpdate}
+          onDelete={handleDelete}
+        />
+
+        {todos.length > 0 && (
+          <p className="mt-4 text-center text-xs text-gray-400">
+            {todos.filter((t) => t.completed).length} / {todos.length} completed
+          </p>
         )}
-
       </div>
     </div>
   )
