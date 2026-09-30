@@ -44,13 +44,13 @@ No database, no message queue, no external orchestrator. Every agent reads what 
 │       ├── architect/SKILL.md      # Architect agent instructions
 │       ├── engineer/SKILL.md       # Engineer agent instructions (handles 1st + 2nd pass)
 │       └── reviewer/SKILL.md       # Reviewer agent instructions
-├── feature-requests/            # 6 pre-written feature requests (pick one to run)
-├── feature-workflows/           # One filled-in workflow doc per completed feature
-│   └── kanban-board-workflow.md # Example: complete PM→Architect→Engineer→Reviewer run
+├── feature-requests/            # pre-written feature requests (pick one to run)
+├── feature-workflows/           # one filled-in workflow doc per completed feature
+│   └── kanban-board-workflow.md # example: complete PM→Architect→Engineer→Reviewer run
 ├── templates/
-│   └── feature-workflow.md      # Blank handoff template — copy this to start a new feature
+│   └── feature-workflow.md      # blank handoff template — copy this to start a new feature
 ├── docs/
-│   └── NOTES.md                 # Architecture overview, agent roles, GitHub integration guide
+│   └── INSTRUCTIONS.md          # workshop setup guide
 └── todo-app/
     ├── backend/                 # Flask 3 + SQLite, pytest
     └── frontend/                # React 19 + Vite + Tailwind CSS
@@ -78,7 +78,7 @@ No database, no message queue, no external orchestrator. Every agent reads what 
 git clone https://github.com/tschechlovdev/watch-party-building-ai-agents.git
 cd watch-party-building-ai-agents/todo-app/backend
 uv run pytest
-# Expected: 31 passed
+# Expected: 17 passed
 ```
 
 ### 2. Open the project in Bob
@@ -261,3 +261,89 @@ git push origin enhancement
 | Add a Security Review agent | New mode + skill that checks the security checklist from the project rules |
 | Automate handoffs | Use Bob lifecycle hooks to trigger the next agent automatically |
 | Adapt to your own project | Update the skill files to reference your app's file paths and tech stack |
+
+---
+
+## Bonus — "Swarm" of SDLC Agents with git worktrees
+
+Run **multiple features in parallel** — one full PM → Engineer → Reviewer pipeline per worktree, each on its own branch, without interfering with each other.
+
+### Why worktrees?
+
+A normal `git clone` ties you to one checked-out branch at a time. `git worktree` lets you check out additional branches into separate directories, all sharing the same `.git` history. Each Bob conversation opened against a different worktree directory is completely isolated.
+
+### How to set it up
+
+```bash
+# From the repo root — create a worktree for each feature you want to run in parallel
+git worktree add ../watch-party-due-dates   -b feature/add-due-dates
+git worktree add ../watch-party-search      -b feature/add-search
+git worktree add ../watch-party-tags        -b feature/add-tags
+```
+
+Now open each `../watch-party-<feature>/` folder as a **separate Bob workspace** (File → Open Folder in VS Code, or equivalent). Start an **Orchestrator Agent** conversation in each workspace and send the matching feature request.
+
+All three pipelines run concurrently, write to their own workflow documents, and commit to separate branches. When a pipeline finishes, simply merge its branch back into `main`.
+
+### Clean up finished worktrees
+
+```bash
+git worktree remove ../watch-party-due-dates
+# repeat for the others
+```
+
+---
+
+## Try out things on your own
+
+Once you've run the basic workflow, here are ideas to explore further:
+
+### Add more feature requests
+
+The `feature-requests/` folder is just markdown files — add your own and run the pipeline against them. The only requirement is a clear **Acceptance Criteria** section so the Reviewer has something concrete to check against.
+
+### Add MCP servers
+
+MCP servers give every Bob agent access to external tools. Good candidates for this workflow:
+
+| MCP server | Why it's useful |
+|---|---|
+| **GitHub MCP** (`@modelcontextprotocol/server-github`) | Issues, PRs, and code search directly in Bob |
+| **Jira / Linear MCP** | Pull real tickets as feature requests instead of local files |
+| **Sentry / Datadog MCP** | Let the Engineer check whether a change broke anything in production |
+| **Postgres / SQLite MCP** | Let the Architect query the live DB schema before designing changes |
+| **Slack MCP** | Post the Final Report to a channel when the pipeline finishes |
+
+### Add skills
+
+Skills are markdown instruction files that load into any mode on demand. Ideas:
+
+- **Security Review skill** — checks the [OWASP Top 10](https://owasp.org/www-project-top-ten/) against every changed file; blocks the Reviewer from approving if a critical finding exists.
+- **Documentation skill** — generates a `CHANGELOG.md` entry and updates API docs automatically after each approved feature.
+- **Test-quality skill** — checks that coverage didn't drop and that every acceptance criterion has a corresponding test.
+
+Public skill repositories (e.g. the [Propel marketplace](https://bob.ibm.com)) are indexed by Bob's marketplace — browse them with `search_assets` or the Bob Marketplace MCP.
+
+### Security and vulnerability scanning
+
+Integrate automated security checks directly into the pipeline:
+
+- Add a **Bob security rule** (already partially in this repo via `global_rules/security.md`) that fires on every code edit.
+- Have the Reviewer skill run `bandit` (Python) or `npm audit` (frontend) and include the output in its verdict.
+- Add a dedicated **Security Agent** mode that runs between the Engineer and Reviewer — it scans for secrets, outdated dependencies, and known CVEs before the code review happens.
+
+### CI/CD and DevOps agent
+
+Extend the pipeline beyond the PR:
+
+- Add a **CI Agent** mode that watches a GitHub Actions workflow run and reports failures back into the workflow document.
+- Add a **Deployment Agent** that triggers a staging deployment after the PR is merged and runs smoke tests.
+- Use Bob lifecycle **hooks** (`on_stop`) to automatically push a branch and open a draft PR as soon as the Reviewer approves.
+
+### Other ideas to try
+
+- **Multi-repo support** — point the Engineer Agent at a monorepo and have it touch multiple packages in one pass.
+- **Feedback loop agent** — reads closed GitHub issues labelled `bug` and generates regression tests automatically.
+- **Changelog agent** — runs after every merge and keeps `CHANGELOG.md` up to date using the workflow documents as input.
+- **Load-testing agent** — runs `locust` or `k6` after the Engineer finishes and includes the results in the Reviewer's checklist.
+- **Diagram agent** — generates an updated architecture diagram (Mermaid) whenever the DB schema or API surface changes.
