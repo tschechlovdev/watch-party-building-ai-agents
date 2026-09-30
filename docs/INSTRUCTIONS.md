@@ -45,8 +45,8 @@ Read the two spec files before you start building. They define what you need to 
 
 | File | What it covers |
 |---|---|
-| [`sdlc_agents_spec.md`](../sdlc_agents_spec.md) | **Phase 1** — the four core agent roles, the handoff document, and PM branch creation |
-| [`orchestrator_agent_spec.md`](../orchestrator_agent_spec.md) | **Phase 2** — the optional Orchestrator that drives all agents automatically |
+| [`sdlc_agents_spec.md`](04%20Workspace/watch_party_building_ai_agents%202026-10-15/sdlc_agents_spec.md) | **Phase 1** — the four core agent roles, the handoff document, and PM branch creation |
+| [`orchestrator_agent_spec.md`](04%20Workspace/watch_party_building_ai_agents%202026-10-15/orchestrator_agent_spec.md) | **Phase 2** — the optional Orchestrator that drives all agents automatically |
 
 **Build Phase 1 first.** The core agents work standalone and are the foundation everything else builds on.
 
@@ -99,13 +99,13 @@ Then run the Reviewer again.
 
 ---
 
-## Step 6 — Build Phase 2: Orchestrator Agent (optional)
+## Step 6 — Build Phase 2: SDLC Orchestrator Agent (optional)
 
-Once Phase 1 is working, add the **Orchestrator Agent** following [`orchestrator_agent_spec.md`](../orchestrator_agent_spec.md).
+Once Phase 1 is working, add the **SDLC Orchestrator Agent** following [`orchestrator_agent_spec.md`](04%20Workspace/watch_party_building_ai_agents%202026-10-15/orchestrator_agent_spec.md).
 
-The Orchestrator is a new Bob mode + skill that accepts a feature request and drives the full PM → Architect → Engineer → Reviewer pipeline automatically by firing each agent as a `start_subtask` call.
+The SDLC Orchestrator is a new Bob mode + skill that accepts a feature request and drives the full PM → Architect → Engineer → Reviewer pipeline automatically by firing each agent as a `start_subtask` call.
 
-Switch to **Orchestrator Agent** mode and send:
+Switch to **SDLC Orchestrator Agent** mode and send:
 ```
 Please run the full workflow for feature-requests/add-priorities.md
 ```

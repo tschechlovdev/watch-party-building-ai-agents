@@ -1,7 +1,7 @@
 # Agentic SDLC — Setup Reminder
 
 This workspace uses five custom Bob modes and five skills for an agentic SDLC workflow.
-The agent modes are: **Orchestrator Agent**, **PM Agent**, **Architect Agent**, **Engineer Agent**, **Reviewer Agent**.
+The agent modes are: **SDLC Orchestrator Agent**, **PM Agent**, **Architect Agent**, **Engineer Agent**, **Reviewer Agent**.
 
 ## If `use_skill` returns "Skill not found"
 
@@ -16,7 +16,7 @@ Skills are scanned once at Bob startup. A fresh conversation always sees them.
 
 | Mode | Skill name |
 |---|---|
-| Orchestrator Agent | `orchestrator` |
+| SDLC Orchestrator Agent | `orchestrator` |
 | PM Agent | `pm` |
 | Architect Agent | `architect` |
 | Engineer Agent | `engineer` |

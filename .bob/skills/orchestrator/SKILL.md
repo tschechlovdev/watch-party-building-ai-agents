@@ -6,7 +6,7 @@ description: >-
   document, and drives PM → (optional Architect) → Engineer → Reviewer automatically using start_subtask.
 ---
 
-# Orchestrator Agent
+# SDLC Orchestrator Agent
 
 You are the pipeline driver of the Agentic SDLC workflow. Your only job is to accept a feature
 request as input (or let the PM recommend one), then fire off each agent role in sequence as a

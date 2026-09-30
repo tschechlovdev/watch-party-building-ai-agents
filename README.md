@@ -8,12 +8,12 @@ The project is built **incrementally in two phases**:
 
 | Phase | Spec | What it adds |
 |---|---|---|
-| **Phase 1 — Core agents** | [`sdlc_agents_spec.md`](sdlc_agents_spec.md) | PM · Architect · Engineer · Reviewer, handoff document, feature branch creation |
-| **Phase 2 — Orchestrator** | [`orchestrator_agent_spec.md`](orchestrator_agent_spec.md) | Single-prompt pipeline driver that runs all agents automatically as subtasks |
+| **Phase 1 — Core agents** | [`sdlc_agents_spec.md`](04%20Workspace/watch_party_building_ai_agents%202026-10-15/sdlc_agents_spec.md) | PM · Architect · Engineer · Reviewer, handoff document, feature branch creation |
+| **Phase 2 — SDLC Orchestrator** | [`orchestrator_agent_spec.md`](04%20Workspace/watch_party_building_ai_agents%202026-10-15/orchestrator_agent_spec.md) | Single-prompt pipeline driver that runs all agents automatically as subtasks |
 
 Start with Phase 1. The core agents work standalone and are the foundation everything else builds on.
 
-> 📋 **Workshop participants:** see [`docs/INSTRUCTIONS.md`](docs/INSTRUCTIONS.md) for the step-by-step setup guide.
+> 📋 **Workshop participants:** see [`docs/INSTRUCTIONS.md`](04%20Workspace/watch_party_building_ai_agents%202026-10-15/docs/INSTRUCTIONS.md) for the step-by-step setup guide.
 
 ---
 
@@ -35,7 +35,7 @@ No database, no message queue, no external orchestrator. Every agent reads what 
 ```
 .
 ├── .bob/
-│   ├── custom_modes.yaml           # 5 agent modes: orchestrator, pm, architect, engineer, reviewer
+│   ├── custom_modes.yaml           # 5 agent modes: sdlc-orchestrator, pm, architect, engineer, reviewer
 │   ├── rules/
 │   │   └── agent-setup.md          # Injected into every conversation — setup reminders + fix hints
 │   └── skills/
@@ -256,7 +256,7 @@ git push origin enhancement
 
 | Extension | How |
 |---|---|
-| **Phase 2 — Orchestrator Agent** | Switch to **Orchestrator Agent** mode and send a single feature request — it drives PM → Architect → Engineer → Reviewer automatically. Spec: [`orchestrator_agent_spec.md`](orchestrator_agent_spec.md) |
+| **Phase 2 — SDLC Orchestrator Agent** | Switch to **SDLC Orchestrator Agent** mode and send a single feature request — it drives PM → Architect → Engineer → Reviewer automatically. Spec: [`orchestrator_agent_spec.md`](04%20Workspace/watch_party_building_ai_agents%202026-10-15/orchestrator_agent_spec.md) |
 | Run another feature | Pick any file from `feature-requests/` and repeat the workflow |
 | Add a Security Review agent | New mode + skill that checks the security checklist from the project rules |
 | Automate handoffs | Use Bob lifecycle hooks to trigger the next agent automatically |

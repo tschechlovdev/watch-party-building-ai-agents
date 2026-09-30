@@ -1,8 +1,8 @@
-# Orchestrator Agent Spec
+# SDLC Orchestrator Agent Spec
 
 ## Goal
 
-The Orchestrator Agent is an optional, higher-level driver that accepts a feature request and
+The SDLC Orchestrator Agent is an optional, higher-level driver that accepts a feature request and
 automatically runs the full PM → (optional Architect) → Engineer → Reviewer pipeline by firing
 each specialist agent as a subtask in sequence.
 
@@ -137,7 +137,7 @@ Once the workflow reaches `current-role: done`, the Orchestrator reports:
 # Relationship to the Core SDLC Agents
 
 The Orchestrator is an *optional coordination layer* on top of the core agents defined in
-[`sdlc_agents_spec.md`](sdlc_agents_spec.md). The core agents (PM, Architect, Engineer, Reviewer)
+[`sdlc_agents_spec.md`](04%20Workspace/watch_party_building_ai_agents%202026-10-15/sdlc_agents_spec.md). The core agents (PM, Architect, Engineer, Reviewer)
 can be run manually without the Orchestrator; the Orchestrator simply automates the handoffs.
 
 This separation means:

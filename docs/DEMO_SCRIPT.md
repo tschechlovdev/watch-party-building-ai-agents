@@ -354,7 +354,7 @@ You can do this manually:
 
 | Extension | How |
 |---|---|
-| **Phase 2 — Orchestrator Agent** | Switch to **Orchestrator Agent** mode and send a single feature request — it drives PM → Architect → Engineer → Reviewer automatically as subtasks. Spec: `orchestrator_agent_spec.md` |
+| **Phase 2 — SDLC Orchestrator Agent** | Switch to **SDLC Orchestrator Agent** mode and send a single feature request — it drives PM → Architect → Engineer → Reviewer automatically as subtasks. Spec: `orchestrator_agent_spec.md` |
 | **Run a second feature** | Pick any file from `feature-requests/` and repeat Parts 3–7 |
 | **Add a Security Review agent** | Add a new mode + skill that reads Implementation Notes and checks the security checklist from the project rules |
 | **Automate handoffs with Bob hooks** | Use Bob's lifecycle hooks to auto-trigger the next agent on session end |

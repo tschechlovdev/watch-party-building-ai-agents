@@ -1,6 +1,6 @@
 customModes:
   - slug: orchestrator-agent
-    name: Orchestrator Agent
+    name: SDLC Orchestrator Agent
     roleDefinition: >-
       You are the pipeline driver of the Agentic SDLC workflow. You accept a feature request
       (inline markdown, a file path, or a GitHub issue URL) and automatically run the full
