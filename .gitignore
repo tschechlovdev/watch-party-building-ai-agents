@@ -41,3 +41,6 @@ logs/
 
 # Test cache
 .pytest_cache/
+
+# Bob task files
+bob-task*.json
