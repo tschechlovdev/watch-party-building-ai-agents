@@ -1,14 +1,27 @@
 # Workshop Instructions — Building an Agentic SDLC Team with Bob
 
-This guide walks you through setting up and running the project from scratch as a workshop participant.
+This lab guide walks you through setting up and running the project from scratch as a workshop participant.
 
-> **Completed solution?** Switch to the `sdlc-agents-solution` branch to see the finished implementation.
+> 💡 **Looking for the completed solution?** Switch to the `sdlc-agents-solution` branch (`git checkout origin/sdlc-agents-solution`) to see the finished implementation and ready-to-use `.bob/` configuration.
+
+---
+
+## 📋 Table of Contents
+1. [Prerequisites](#prerequisites)
+2. [Step 1 — Clone and Open the Project](#step-1--clone-and-open-the-project)
+3. [Step 2 — Verify the Todo Application](#step-2--verify-the-todo-application)
+4. [Step 3 — Understand the Architecture & Specs](#step-3--understand-the-architecture--specs)
+5. [Step 4 — Build Phase 1: Core Specialist Agents](#step-4--build-phase-1-core-specialist-agents)
+6. [Step 5 — Run the Feature Pipeline](#step-5--run-the-feature-pipeline)
+7. [Step 6 — Build Phase 2: SDLC Orchestrator Agent](#step-6--build-phase-2-sdlc-orchestrator-agent)
+8. [Feature Catalogue](#feature-catalogue)
+9. [Troubleshooting](#troubleshooting)
 
 ---
 
 ## Prerequisites
 
-| Tool | Required for |
+| Tool | Purpose |
 |---|---|
 | [IBM Bob](https://bob.ibm.com) | Running the agent workflow |
 | Python 3.11+ with [`uv`](https://github.com/astral-sh/uv) | Backend tests (`uv run pytest`) |
@@ -18,189 +31,125 @@ This guide walks you through setting up and running the project from scratch as 
 
 ---
 
-## Step 1 — Clone and open the project
+## Step 1 — Clone and Open the Project
 
+### 1. In your Terminal:
 ```bash
 git clone https://github.com/tschechlovdev/watch-party-building-ai-agents.git
 cd watch-party-building-ai-agents
 ```
 
-Open the `watch-party-building-ai-agents/` folder as your Bob workspace.
+### 2. In IBM Bob:
+* Open the **IBM Bob** desktop app (or Bob in VS Code).
+* Go to the top menu: **File → Open Folder...** (or press `Cmd+O` on macOS / `Ctrl+O` on Windows/Linux).
+* Select the `watch-party-building-ai-agents` directory.
 
 ---
 
-## Step 2 — Verify the Todo application
+## Step 2 — Verify the Todo Application
+
+Run the existing backend test suite to make sure your environment is properly set up:
 
 ```bash
 cd todo-app/backend
 uv run pytest
 # Expected: 17 passed
+cd ../..
 ```
 
 ---
 
-## Step 3 — Understand the specs
+## Step 3 — Understand the Architecture & Specs
 
-Read the two spec files before you start building. They define what you need to implement and in what order:
+Before creating any files, review the specifications and markdown templates in this repository:
 
 | File | What it covers |
 |---|---|
-| [`sdlc_agents_spec.md`](../sdlc_agents_spec.md) | **Phase 1** — the four core agent roles, the handoff document, and PM branch creation |
-| [`orchestrator_agent_spec.md`](../orchestrator_agent_spec.md) | **Phase 2** — the optional Orchestrator that drives all agents automatically |
-
-**Build Phase 1 first.** The core agents work standalone and are the foundation everything else builds on.
-
----
-
-## Step 4 — Build Phase 1: Core Agents
-
-You will create five Bob artefacts for each agent role: a **mode** entry in `.bob/custom_modes.yaml` and a **skill** file at `.bob/skills/<name>/SKILL.md`.
-
-The four roles are:
-
-| Role | What it does |
-|---|---|
-| **PM Agent** | Reads the feature request, creates a git feature branch, writes user stories and acceptance criteria |
-| **Architect Agent** | Reads the PM Analysis, designs DB schema, API changes, and frontend changes |
-| **Engineer Agent** | Implements the Architecture Design, writes tests, runs them |
-| **Reviewer Agent** | Reviews the implementation against the acceptance criteria, writes a verdict |
-
-### Suggested order
-
-1. Create the **shared workflow template** (`templates/feature-workflow.md`) — this is the handoff document all agents read and write.
-2. Implement the **PM Agent** mode + skill.
-3. Test it end-to-end on a feature request from `feature-requests/`.
-4. Add **Architect**, **Engineer**, and **Reviewer** one at a time, testing each before moving on.
-
-### Key design constraints
-
-- Agents communicate **only** through the workflow document — no direct calls between them.
-- Each agent reads the section written by the previous one and appends its own.
-- The `current-role` field in the document's front matter controls who acts next.
-- The PM Agent must create a local git feature branch (`git checkout -b feature/<slug>`) **before writing anything**.
-- The Reviewer must not be able to edit source files (enforce via `fileRegex` write restriction in the mode config).
+| [`sdlc_agents_spec.md`](../sdlc_agents_spec.md) | **Phase 1** — The 4 core agent roles, the shared markdown handoff document, and branch management |
+| [`orchestrator_agent_spec.md`](../orchestrator_agent_spec.md) | **Phase 2** — The optional Orchestrator that automates all handoffs via subtasks |
+| [`templates/feature-workflow.md`](../templates/feature-workflow.md) | The blank handoff template that serves as the shared memory for each feature |
 
 ---
 
-## Step 5 — Run the workflow
+## Step 4 — Build Phase 1: Core Specialist Agents
 
-Once all four agents are implemented, pick a feature request and run the pipeline manually:
+You will configure Bob modes in `.bob/custom_modes.yaml` and operating instructions in `.bob/skills/<name>/SKILL.md`:
 
-1. **PM Agent mode** → `Please analyze the feature request at feature-requests/add-priorities.md and create the workflow document.`
-2. **Architect Agent mode** → `Please design the implementation for feature-workflows/add-priorities-workflow.md`
-3. **Engineer Agent mode** → `Please implement feature-workflows/add-priorities-workflow.md`
-4. **Reviewer Agent mode** → `Please review feature-workflows/add-priorities-workflow.md`
+| Role | Mode Slug | What it does |
+|---|---|---|
+| **PM Agent** | `pm-agent` | Analyzes feature request, checks out `feature/<slug>` branch, writes User Stories & Acceptance Criteria |
+| **Architect Agent** | `architect-agent` | Reads PM analysis, designs DB schema, API contracts, frontend architecture, and writes an Engineer Checklist |
+| **Engineer Agent** | `engineer-agent` | Implements the code changes in Flask & React, writes backend tests, and runs `uv run pytest` |
+| **Reviewer Agent** | `reviewer-agent` | **Read-only**; reviews changed code against Acceptance Criteria and issues a verdict (`Approved` / `Changes Required`) |
 
-If the Reviewer returns **Changes Required**, switch back to Engineer Agent and run:
-```
+### Key Design Rules:
+- Agents communicate **only** through the workflow document (`feature-workflows/<feature>-workflow.md`) — no external databases or complex message queues.
+- Each agent reads what previous agents wrote and appends its own section.
+- The `current-role` field in the document's YAML front matter tracks which agent acts next.
+- The Reviewer Agent is strictly read-only on application source code (enforced by `fileRegex` write restriction in `.bob/custom_modes.yaml`).
+
+---
+
+## Step 5 — Run the Feature Pipeline
+
+Pick a feature request (e.g. [`feature-requests/add-priorities.md`](../feature-requests/add-priorities.md)) and run the workflow by switching modes:
+
+1. **PM Agent Mode** (`pm-agent`):
+   ```text
+   Please analyze the feature request at feature-requests/add-priorities.md and create the workflow document.
+   ```
+2. **Architect Agent Mode** (`architect-agent`):
+   ```text
+   Please design the implementation for feature-workflows/add-priorities-workflow.md
+   ```
+3. **Engineer Agent Mode** (`engineer-agent`):
+   ```text
+   Please implement feature-workflows/add-priorities-workflow.md
+   ```
+4. **Reviewer Agent Mode** (`reviewer-agent`):
+   ```text
+   Please review feature-workflows/add-priorities-workflow.md
+   ```
+
+*If the Reviewer requests changes (`Changes Required`), switch back to Engineer Agent and run:*
+```text
 Please address the review feedback in feature-workflows/add-priorities-workflow.md
 ```
-Then run the Reviewer again.
 
 ---
 
-## Step 6 — Build Phase 2: Orchestrator Agent (optional)
+## Step 6 — Build Phase 2: SDLC Orchestrator Agent
 
-Once Phase 1 is working, add the **Orchestrator Agent** following [`orchestrator_agent_spec.md`](../orchestrator_agent_spec.md).
+Once Phase 1 is tested, build the **SDLC Orchestrator Agent** following [`orchestrator_agent_spec.md`](../orchestrator_agent_spec.md).
 
-The Orchestrator is a new Bob mode + skill that accepts a feature request and drives the full PM → Architect → Engineer → Reviewer pipeline automatically by firing each agent as a `start_subtask` call.
+The Orchestrator mode (`orchestrator-agent`) and skill (`.bob/skills/orchestrator/SKILL.md`) drive the entire PM → Architect → Engineer → Reviewer pipeline automatically with subtasks.
 
-Switch to **Orchestrator Agent** mode and send:
-```
+Switch to **SDLC Orchestrator Agent** mode and run:
+```text
 Please run the full workflow for feature-requests/add-priorities.md
 ```
 
 ---
 
+## Feature Catalogue
+
+| File | Feature | Complexity | Recommended For |
+|---|---|---|---|
+| `add-priorities.md` | **Priorities** | ⭐ Low | First demo / workshop run |
+| `add-due-dates.md` | **Due Dates** | ⭐⭐ Low–Medium | Date logic & overdue UI styling |
+| `add-search.md` | **Search & Filter** | ⭐⭐ Medium | Pure frontend filtering & state |
+| `add-tags.md` | **Tags / Labels** | ⭐⭐ Medium | Many-to-many database relationships |
+| `kanban-board.md` | **Kanban Board** | ⭐⭐⭐ Medium–High | Full multi-column view & state mapping |
+| `analytics-dashboard.md` | **Analytics** | ⭐⭐⭐ High | Aggregation endpoints & charting |
+
+---
+
 ## Troubleshooting
 
-| Problem | Fix |
+| Issue | Cause & Fix |
 |---|---|
-| `use_skill` returns "skill not found" | Bob has not scanned the workspace skills yet — **close this conversation, open a new one**, and try again |
-| `uv run pytest` fails with "command not found" | `brew install uv` or `pip install uv` |
-| Tests fail with "no such column" | Delete `todo-app/backend/todos.db` — it will be recreated with the correct schema |
-| Bob ignores skill instructions | Confirm the mode's `customInstructions` references `use_skill` with the correct skill name, and that the skill file exists at `.bob/skills/<name>/SKILL.md` |
-
----
-
-## Feature request catalogue
-
-| File | Feature | Complexity | Good starting point? |
-|---|---|---|---|
-| `add-priorities.md` | **Priorities** | ⭐ Low | ✅ Recommended first run |
-| `add-due-dates.md` | **Due Dates** | ⭐⭐ Low–Medium | Date handling + overdue highlighting |
-| `add-search.md` | **Search & Filter** | ⭐⭐ Medium | No schema change — pure frontend |
-| `add-tags.md` | **Tags / Labels** | ⭐⭐ Medium | Many-to-many DB pattern |
-| `kanban-board.md` | **Kanban Board** | ⭐⭐⭐ Medium–High | Already in solution branch |
-| `analytics-dashboard.md` | **Analytics** | ⭐⭐⭐ High | Aggregation API + charting |
-
----
-
-## Bonus — "Swarm" of SDLC Agents with git worktrees
-
-Run **multiple features in parallel** — one full PM → Engineer → Reviewer pipeline per worktree, each on its own branch, without interfering with each other.
-
-### Why worktrees?
-
-A normal `git clone` ties you to one checked-out branch at a time. `git worktree` lets you check out additional branches into separate directories, all sharing the same `.git` history. Each Bob conversation opened against a different worktree directory is completely isolated.
-
-### How to set it up
-
-```bash
-# From the repo root — create a worktree for each feature you want to run in parallel
-git worktree add ../watch-party-due-dates   -b feature/add-due-dates
-git worktree add ../watch-party-search      -b feature/add-search
-git worktree add ../watch-party-tags        -b feature/add-tags
-```
-
-Open each `../watch-party-<feature>/` folder as a **separate Bob workspace**. Start an **Orchestrator Agent** conversation in each workspace and send the matching feature request.
-
-All three pipelines run concurrently, write to their own workflow documents, and commit to separate branches. When a pipeline finishes, merge its branch back into `main`.
-
-```bash
-git worktree remove ../watch-party-due-dates
-# repeat for the others
-```
-
----
-
-## Try out things on your own
-
-Once you've run the basic workflow, here are ideas to explore further:
-
-### Add more feature requests
-
-The `feature-requests/` folder is just markdown files — add your own and run the pipeline against them. The only requirement is a clear **Acceptance Criteria** section so the Reviewer has something concrete to check against.
-
-### Add MCP servers
-
-| MCP server | Why it's useful |
-|---|---|
-| **GitHub MCP** (`@modelcontextprotocol/server-github`) | Issues, PRs, and code search directly in Bob |
-| **Jira / Linear MCP** | Pull real tickets as feature requests instead of local files |
-| **Sentry / Datadog MCP** | Let the Engineer check whether a change broke anything in production |
-| **Postgres / SQLite MCP** | Let the Architect query the live DB schema before designing changes |
-| **Slack MCP** | Post the Final Report to a channel when the pipeline finishes |
-
-### Add skills
-
-- **Security Review skill** — checks OWASP Top 10 against every changed file; blocks the Reviewer from approving if a critical finding exists.
-- **Documentation skill** — generates a `CHANGELOG.md` entry and updates API docs automatically after each approved feature.
-- **Test-quality skill** — checks that coverage didn't drop and that every acceptance criterion has a corresponding test.
-
-### Security and vulnerability scanning
-
-- Have the Reviewer skill run `bandit` (Python) or `npm audit` (frontend) and include the output in its verdict.
-- Add a dedicated **Security Agent** mode between Engineer and Reviewer that scans for secrets, outdated dependencies, and known CVEs.
-
-### CI/CD and DevOps agent
-
-- Add a **CI Agent** mode that watches a GitHub Actions workflow run and reports failures back into the workflow document.
-- Add a **Deployment Agent** that triggers a staging deployment after the PR is merged and runs smoke tests.
-- Use Bob lifecycle **hooks** (`on_stop`) to automatically push a branch and open a draft PR as soon as the Reviewer approves.
-
-### Other ideas
-
-- **Feedback loop agent** — reads closed GitHub issues labelled `bug` and generates regression tests automatically.
-- **Changelog agent** — runs after every merge and keeps `CHANGELOG.md` up to date using the workflow documents as input.
-- **Diagram agent** — generates an updated architecture diagram (Mermaid) whenever the DB schema or API surface changes.
+| `use_skill` returns "skill not found" | Bob indexes skills at conversation start. **Close the current chat and open a new Bob conversation.** |
+| `uv run pytest` fails with "command not found" | Install `uv` via `brew install uv` (macOS) or `pip install uv`. |
+| Tests fail with "no such column" | Delete `todo-app/backend/todos.db` — SQLite will recreate it with the latest schema on startup. |
+| Reviewer Agent cannot modify `.py` or `.jsx` files | This is intentional! The Reviewer mode is restricted to editing only workflow markdown documents. |
+| Newly added custom modes not showing up | Ensure `.bob/custom_modes.yaml` is valid YAML and restart your Bob conversation/editor. |
