@@ -6,7 +6,7 @@ The workflow takes a raw feature request and autonomously designs, implements, t
 
 ---
 
-## 💡 The Premise & Mental Model
+## The Premise & Mental Model
 
 ### Why an Agentic SDLC Team?
 In traditional software development, shipping a quality feature requires distinct perspectives:
@@ -39,7 +39,7 @@ Code Review (Read-only check against Acceptance Criteria)
 
 ---
 
-## 📂 Repository Structure & File Guide
+## Repository Structure & File Guide
 
 ### What is in this repository?
 
@@ -82,7 +82,7 @@ Code Review (Read-only check against Acceptance Criteria)
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### 1. Prerequisites
 | Tool | Purpose |
@@ -117,7 +117,7 @@ Code Review (Read-only check against Acceptance Criteria)
 
 ---
 
-## 🛠️ How to Run the Workflow
+## How to Run the Workflow
 
 You can run the workflow in two ways:
 
@@ -173,7 +173,7 @@ The Orchestrator will automatically trigger PM, Architect, Engineer, and Reviewe
 
 ---
 
-## 🌐 Optional: GitHub Integration (Issues & PRs)
+## Optional: GitHub Integration (Issues & PRs)
 
 To connect the agent workflow directly to GitHub:
 
@@ -201,7 +201,7 @@ To connect the agent workflow directly to GitHub:
 
 ---
 
-## ⚡ Bonus: Parallel Feature Swarms with Git Worktrees
+## Bonus: Parallel Feature Swarms with Git Worktrees
 
 Want to run multiple AI feature pipelines simultaneously on the same codebase without collisions? Use **Git Worktrees**:
 
@@ -216,7 +216,8 @@ Open each folder in a separate Bob window (**File → Open Folder**). Run an Orc
 
 ---
 
-## 📚 Further Resources & Next Steps
+## Further Resources & Next Steps
 * Detailed lab guide: [`docs/INSTRUCTIONS.md`](docs/INSTRUCTIONS.md)
 * Core agent specifications: [`sdlc_agents_spec.md`](sdlc_agents_spec.md)
 * Orchestrator specification: [`orchestrator_agent_spec.md`](orchestrator_agent_spec.md)
+* Extensions & ideas for going further: [`docs/EXTENSIONS.md`](docs/EXTENSIONS.md)

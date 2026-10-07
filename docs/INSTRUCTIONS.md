@@ -6,7 +6,7 @@ This lab guide walks you through setting up and running the project from scratch
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 1. [Prerequisites](#prerequisites)
 2. [Step 1 — Clone and Open the Project](#step-1--clone-and-open-the-project)
 3. [Step 2 — Verify the Todo Application](#step-2--verify-the-todo-application)
@@ -153,3 +153,9 @@ Please run the full workflow for feature-requests/add-priorities.md
 | Tests fail with "no such column" | Delete `todo-app/backend/todos.db` — SQLite will recreate it with the latest schema on startup. |
 | Reviewer Agent cannot modify `.py` or `.jsx` files | This is intentional! The Reviewer mode is restricted to editing only workflow markdown documents. |
 | Newly added custom modes not showing up | Ensure `.bob/custom_modes.yaml` is valid YAML and restart your Bob conversation/editor. |
+
+---
+
+## Going Further
+
+See [`docs/EXTENSIONS.md`](EXTENSIONS.md) for ideas on additional agents, MCP servers, skills, security scanning, CI/CD integration, and running parallel feature pipelines with git worktrees.
