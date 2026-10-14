@@ -74,24 +74,28 @@ The implementation should support experimenting with different feature requests.
 
 ---
 
-# PM Agent
+# Feature Intake (Orchestrator Agent)
 
-## Responsibilities
+Feature intake — feature selection, branch creation and workflow document creation — is owned by
+the **Orchestrator Agent**, not by the PM Agent. It happens before the PM Agent runs. See
+[`orchestrator_agent_spec.md`](orchestrator_agent_spec.md) for the full flow.
 
-The PM Agent is the first agent to run for any feature. Its responsibilities are:
+The Orchestrator can be invoked with a feature request (inline description, file path, or GitHub
+issue URL) or without one. In both cases, by the time the PM Agent starts:
 
-1. Read and analyze the feature request.
-2. **Create a dedicated git feature branch before writing anything.**
-3. Read the existing application to understand the current state.
-4. Create the workflow document from the template.
-5. Write user stories and acceptance criteria.
-6. Decide whether an Architect phase is needed.
-7. Hand off to the next agent.
+1. A feature has been selected (by the user's request, or by the user confirming/overriding the
+   Orchestrator's recommendation).
+2. The feature request exists as a file in `feature-requests/`.
+3. The git feature branch `feature/<feature-slug>` has been created (or checked out when resuming)
+   by the Orchestrator.
+4. The workflow document `feature-workflows/<feature-slug>-workflow.md` has been created from
+   `templates/feature-workflow.md` by the Orchestrator, with `branch` set and
+   `current-role: pm`.
 
 ## Branch Creation
 
-The PM Agent must create a git feature branch as the very first step after reading the feature
-request — before creating or editing any workflow document or application file.
+The Orchestrator creates the git feature branch once the feature is confirmed — before creating
+or editing any workflow document or application file.
 
 ```text
 git checkout -b feature/<feature-slug>
@@ -103,12 +107,12 @@ If the branch already exists (resuming a workflow), switch to it instead:
 git checkout feature/<feature-slug>
 ```
 
-If git is unavailable or the command fails, log a warning and continue — do not block the PM
-Analysis on a git failure.
+If git is unavailable or the command fails, log a warning and continue — do not block the
+workflow on a git failure.
 
 ## Feature Selection & Recommendation
 
-When the PM Agent is invoked **without a specific feature request** (no file path, no inline
+When the Orchestrator is invoked **without a specific feature request** (no file path, no inline
 description, no GitHub issue URL), it must not pick a feature silently. Instead it must:
 
 1. **Discover available work** — in priority order:
@@ -138,8 +142,31 @@ description, no GitHub issue URL), it must not pick a feature silently. Instead 
    > "I recommend starting with **[feature name]**. Shall I proceed with this one, or would
    > you like to pick a different feature from the list?"
 
-   Wait for explicit user confirmation. Do not start the PM Analysis, branch creation, or any
-   file writes until the user has selected a feature.
+   Wait for explicit user confirmation. Do not start branch creation, workflow document
+   creation, the PM Analysis, or any other file writes until the user has selected a feature.
+   Once the user confirms the recommendation or picks a different feature, the Orchestrator
+   creates the branch and the workflow document, then hands off to the PM Agent.
+
+---
+
+# PM Agent
+
+## Responsibilities
+
+The PM Agent is the first specialist agent to run for any feature, after the Orchestrator has
+completed feature intake. Its responsibilities are:
+
+1. Read the workflow document and the feature request it references.
+2. Read the existing application to understand the current state.
+3. Fill in the PM Analysis section of the workflow document (the document and the feature branch
+   already exist — the PM Agent does not create them).
+4. Write user stories and acceptance criteria.
+5. Decide whether an Architect phase is needed.
+6. Hand off to the next agent.
+
+The PM Agent does **not** select features, recommend features, create git branches, or create the
+workflow document. If no workflow document exists for the feature, it stops and tells the user to
+start via the Orchestrator Agent.
 
 ---
 

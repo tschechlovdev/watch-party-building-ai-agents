@@ -2,12 +2,12 @@
 
 ## Goal
 
-The Orchestrator Agent is an optional, higher-level driver that accepts a feature request and
-automatically runs the full PM → (optional Architect) → Engineer → Reviewer pipeline by firing
+The Orchestrator Agent is an optional, higher-level driver that automatically runs the full PM → (optional Architect) → Engineer → Reviewer pipeline by firing
 each specialist agent as a subtask in sequence.
 
-The Orchestrator does no PM, architecture, engineering, or review work itself — it only delegates
-and verifies that each phase completed correctly before starting the next.
+The Orchestrator does no PM, architecture, engineering, or review work itself — it only handles feature intake (selection, branch, workflow document), delegates the specialist phases, and verifies that each phase completed correctly before starting the next.
+
+It may take as input a feature request but does not have to. If no feature request is provided, the Orchestrator itself analyses the available candidate features (by complexity and benefit) and recommends one. The user confirms the recommendation or picks another feature. Once a feature is confirmed, the Orchestrator creates the git feature branch and the workflow document, then hands over to the PM.
 
 ---
 
@@ -16,42 +16,26 @@ and verifies that each phase completed correctly before starting the next.
 When asked to implement this spec, **create the Orchestrator Agent mode in `.bob/custom_modes.yaml`**
 without asking the user whether to do so.
 
-The mode entry follows the same pattern as the other agent modes already in `custom_modes.yaml`:
-
-```yaml
-- slug: orchestrator-agent
-  name: Orchestrator Agent
-  roleDefinition: >
-    You are the Orchestrator Agent. You drive the full SDLC pipeline automatically by delegating
-    to PM, Architect, Engineer, and Reviewer agents via subtasks. You do no implementation work
-    yourself — you only sequence, verify, and report.
-  customInstructions: >
-    At the start of every conversation, call use_skill("orchestrator") to load your detailed
-    instructions before taking any action.
-  groups:
-    - read
-    - edit
-    - command
-    - mcp
-```
-
 ---
 
 # Core Responsibilities
 
-1. Accept a feature request (inline markdown, a file path, or a GitHub issue URL).
+1. Might accept a feature request (inline markdown, a file path, or a GitHub issue URL). If none is given, analyse candidate features (complexity and benefit), recommend one, and let the user confirm or pick another.
 2. Persist the feature request as a file (if it was not already one).
-3. Create or resume the workflow document.
-4. Drive each agent phase in sequence using subtasks.
-5. Verify phase completion before starting the next phase.
-6. Report the final outcome, including how to run and test the result.
+3. Create (or check out, when resuming) the git feature branch `feature/<feature-slug>`.
+4. Create or resume the workflow document from `templates/feature-workflow.md` (with `branch` set and `current-role: pm`).
+5. Drive each agent phase in sequence using subtasks.
+6. Verify phase completion before starting the next phase.
+7. Report the final outcome, including how to run and test the result.
 
 ---
 
 # Workflow
 
 ```text
-Feature Request
+Feature Request (optional - Orchestrator recommends a feature otherwise; user confirms or picks another)
+    ↓
+Orchestrator: create feature branch + workflow document
     ↓
 PM Agent subtask
     ↓
@@ -78,21 +62,53 @@ The Orchestrator accepts the feature request in one of four ways:
 | **Inline markdown** | User pastes or describes the feature in their message |
 | **File path** | User points to an existing `feature-requests/<name>.md` file |
 | **GitHub issue URL** | e.g. `https://github.com/org/repo/issues/42` — fetched via GitHub MCP or `gh` CLI (via `gh issue view` ) |
-| **No feature specified** | Orchestrator presents a ranked recommendation from the PM and asks the user to pick |
+| **No feature specified** | The Orchestrator itself analyses the candidate features by complexity and benefit and recommends one. The user has to confirm this or can select another feature.|
 
 ## When no feature request is provided
 
-The Orchestrator must **not** select a feature autonomously. Instead:
+The Orchestrator must **not** select a feature autonomously. Instead it discovers, analyses and
+recommends:
 
-1. **If the GitHub MCP server is connected** (check by calling any lightweight GitHub tool, e.g.
-   listing repos or the current user): list open GitHub issues from the repository and present
-   them to the user as numbered candidates.
-2. **If the `gh` CLI is authenticated** (`gh auth status` returns success): use
-   `gh issue list --repo <owner>/<repo>` to fetch open issues and present them.
-3. **Otherwise**: list the files in `feature-requests/` and present them as candidates.
+1. **Discover candidates**, in priority order:
+   - **GitHub MCP server connected** (check by calling any lightweight GitHub tool, e.g. listing
+     repos or the current user): list open, unassigned GitHub issues from the repository.
+   - **`gh` CLI authenticated** (`gh auth status` returns success): use
+     `gh issue list --repo <owner>/<repo>` to fetch open issues.
+   - **Otherwise**: list the `.md` files in `feature-requests/`.
+2. **Analyse each candidate** on two dimensions:
+   - **Complexity** (Low / Medium / High) — number of layers touched (DB, API, frontend), schema
+     migrations required, external dependencies, test surface area.
+   - **Benefit** (Low / Medium / High) — explicit priority/label metadata, keywords such as
+     "urgent", "user-requested", "high-value", or how fundamental the capability is to the
+     application.
+3. **Present a ranked recommendation table** (`#`, Feature, Complexity, Benefit,
+   Recommendation) with a one-sentence rationale for the top recommendation.
+4. **Ask the user to confirm**:
+   > "I recommend starting with **[feature name]**. Shall I proceed with this one, or would you
+   > like to pick a different feature from the list?"
 
-In all three cases, show the list and ask the user to pick one — **never make the selection
-automatically**.
+**Never make the selection automatically.** Do not create a branch, a workflow document, or any
+other file until the user has confirmed the recommendation or chosen another feature.
+
+## Feature Intake (after the feature is confirmed)
+
+Once a feature is determined (provided by the user, or confirmed/picked after the
+recommendation), the Orchestrator — not the PM Agent — performs these steps, in order, before
+starting the PM subtask:
+
+1. **Persist the feature request** as `feature-requests/<feature-slug>.md` if it is not already a
+   file (inline text or GitHub issue content).
+2. **Create the git feature branch**:
+   ```text
+   git checkout -b feature/<feature-slug>
+   ```
+   If the branch already exists (resuming), run `git checkout feature/<feature-slug>` instead. If
+   git is unavailable or the command fails, log a warning and continue.
+3. **Create the workflow document** `feature-workflows/<feature-slug>-workflow.md` from
+   `templates/feature-workflow.md`: fill in `feature`, `slug`, `feature-request-file`, set
+   `branch` to the branch name and `current-role: pm`. If it already exists, resume it instead
+   of overwriting.
+4. Start the PM Agent subtask.
 
 ## Fetching a GitHub issue
 
@@ -152,7 +168,7 @@ Reviewer). If the second review also results in Changes Required, stop and escal
 
 # Design Principles
 
-- Delegate everything. The Orchestrator does no substantive work itself.
+- Delegate the specialist work. The Orchestrator does no PM, architecture, engineering or review work itself; its own work is limited to feature intake (recommendation, branch, workflow document).
 - Fail loudly. If a subtask does not complete correctly, stop immediately and report the exact
   missing section — never silently skip a validation.
 - Architect is optional. Never add it to the pipeline unless explicitly requested by the PM.
