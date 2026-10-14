@@ -32,10 +32,7 @@ logs/
 
 # Bob — ignore everything except agent config
 .bob/
-!.bob/custom_modes.yaml
 !.bob/mcp.json
-!.bob/skills/
-!.bob/skills/**
 !.bob/rules/
 !.bob/rules/**
 
