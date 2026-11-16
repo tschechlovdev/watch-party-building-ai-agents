@@ -34,7 +34,13 @@ export default function App() {
   async function handleDelete(id) {
     try {
       await deleteTodo(id)
-      setTodos((prev) => prev.filter((t) => t.id !== id))
+      setTodos((prev) => {
+        const index = prev.findIndex((t) => t.id === id)
+        if (index !== -1) {
+          prev.splice(index, 1)
+        }
+        return prev
+      })
     } catch {
       setError('Failed to delete todo.')
     }

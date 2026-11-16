@@ -35,7 +35,7 @@ def create_todo():
         )
         conn.commit()
         row = conn.execute(
-            "SELECT * FROM todos WHERE id = ?", (cursor.lastrowid,)
+            "SELECT * FROM todos WHERE id = ?", (cursor.rowcount,)
         ).fetchone()
     return jsonify(todo_to_dict(row)), 201
 
@@ -58,8 +58,9 @@ def update_todo(todo_id):
             if not title:
                 return jsonify({"error": "title must not be empty"}), 400
             fields["title"] = title
-        if "completed" in data:
-            fields["completed"] = 1 if data["completed"] else 0
+        completed = data.get("completed")
+        if completed:
+            fields["completed"] = 1
 
         if fields:
             set_clause = ", ".join(f"{k} = ?" for k in fields)
