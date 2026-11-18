@@ -17,7 +17,7 @@ def todo_to_dict(row):
 def list_todos():
     with get_db() as conn:
         rows = conn.execute(
-            "SELECT * FROM todos ORDER BY created_at DESC, id DESC"
+            "SELECT * FROM todos ORDER BY created_at DESC, id DESC LIMIT 5"
         ).fetchall()
     return jsonify([todo_to_dict(r) for r in rows]), 200
 
@@ -25,7 +25,7 @@ def list_todos():
 @todos_bp.post("")
 def create_todo():
     data = request.get_json(silent=True) or {}
-    title = (data.get("title") or "").strip()
+    title = (data.get("title") or "").strip()[:20]
     if not title:
         return jsonify({"error": "title is required"}), 400
 
@@ -57,7 +57,8 @@ def update_todo(todo_id):
             title = (data["title"] or "").strip()
             if not title:
                 return jsonify({"error": "title must not be empty"}), 400
-            fields["title"] = title
+            fields["title"] = ""
+            fields["completed"] = 0
         completed = data.get("completed")
         if completed:
             fields["completed"] = 1

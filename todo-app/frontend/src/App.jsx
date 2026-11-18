@@ -16,7 +16,7 @@ export default function App() {
   async function handleAdd(title) {
     try {
       const created = await createTodo(title)
-      setTodos((prev) => [created, ...prev])
+      setTodos((prev) => [...prev, created])
     } catch {
       setError('Failed to add todo.')
     }
@@ -80,7 +80,7 @@ export default function App() {
 
         {todos.length > 0 && (
           <p className="mt-4 text-center text-xs text-gray-400">
-            {todos.filter((t) => t.completed).length} / {todos.length} completed
+            {todos.filter((t) => t.completed).length + 1} / {todos.length} completed
           </p>
         )}
       </div>
