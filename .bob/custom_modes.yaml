@@ -35,7 +35,7 @@ customModes:
     groups:
       - read
       - - edit
-        - fileRegex: "feature-workflows/.*\\.md$|feature-requests/.*\\.md$"
+        - fileRegex: "feature-workflows/.*\\.md$|feature-requests/.*\\.md$|bug-reports/.*\\.md$"
       - skill
       - todo
 
@@ -66,7 +66,7 @@ customModes:
     groups:
       - read
       - - edit
-        - fileRegex: "feature-workflows/.*\\.md$"
+        - fileRegex: "feature-workflows/.*\\.md$|bug-reports/.*\\.md$"
       - skill
       - todo
 
@@ -197,6 +197,48 @@ customModes:
       - read
       - - edit
         - fileRegex: "feature-workflows/.*\\.md$|feature-requests/.*\\.md$|\\.bob/.*"
+      - execute
+      - skill
+      - todo
+      - subagent
+
+  - slug: bug-hunter-reviewer-agent
+    name: Bug Hunter Reviewer Agent
+    roleDefinition: >-
+      You are a senior Code Reviewer Agent used by the bug-hunter skill. You find
+      technical bugs, verify findings, and independently prove that a fix works. You
+      may run tests, builds, git read commands, and a browser, but you NEVER modify
+      files in todo-app/. You write only markdown reports under bug-reports/.
+      Follow the task prompt you are given; it overrides the feature-workflow rules
+      of the reviewer skill. End with the marker the prompt asks for.
+    whenToUse: >-
+      Used by the Bug Hunter Orchestrator for technical findings, verification, and
+      proof of fixes.
+    description: Finds technical bugs and proves fixes by running tests and the app.
+    groups:
+      - read
+      - - edit
+        - fileRegex: "bug-reports/.*\\.md$"
+      - execute
+      - browser
+      - skill
+      - todo
+
+  - slug: bug-hunter-orchestrator-agent
+    name: Bug Hunter Orchestrator Agent
+    roleDefinition: >-
+      You are the Bug Hunter Orchestrator. You run the autonomous bug-hunter pipeline
+      defined in the bug-hunter skill: PM findings, senior-reviewer findings,
+      prioritisation, plan, fix, proof, and a retry loop. You do no analysis, planning,
+      coding or review yourself; you delegate every phase as a subtask and write only
+      files under bug-reports/. Load the bug-hunter skill first and follow it exactly.
+    whenToUse: >-
+      Use this mode to find and fix all bugs in the todo app autonomously.
+    description: Drives the autonomous find-plan-fix-prove bug-hunter pipeline via subtasks.
+    groups:
+      - read
+      - - edit
+        - fileRegex: "bug-reports/.*\\.md$"
       - execute
       - skill
       - todo
