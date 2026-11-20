@@ -247,4 +247,5 @@ customModes:
       - execute
       - skill
       - todo
+      - subtask
       - subagent
