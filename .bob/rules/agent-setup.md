@@ -27,3 +27,10 @@ Skills are scanned once at Bob startup. A fresh conversation always sees them.
 The SDLC agent skills must NOT have `metadata: disable-model-invocation: true` in their
 frontmatter — that flag prevents Bob from indexing them in the `use_skill` lookup table.
 The skills already have narrow enough descriptions to avoid accidental auto-triggering.
+
+## Bug Hunter skill
+
+Mode **Bug Hunter Orchestrator Agent** (`bug-hunter-orchestrator-agent`) runs the skill
+`bug-hunter`. It delegates to `engineer-agent` and `bug-hunter-reviewer-agent` only.
+Run it on a clean tree. It creates the branch `bug-fixes`, makes one commit at the end
+(without `bug-reports/`) and deletes `bug-reports/` when the run is complete.
