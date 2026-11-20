@@ -1,151 +1,153 @@
 ---
 name: bug-hunter
 description: >-
-  Autonomous bug hunt and fix for the todo app. Uses the project's .md docs to learn
-  how the app should work, finds what keeps it from working that way plus clear
-  technical failures (failing tests, lint/build errors, crashes), prioritises them,
-  plans the fixes, fixes them, and proves every fix in tests and in a real browser,
-  repeating until all are fixed. Triggers: "bug hunter", "find and fix bugs",
-  "audit the app and fix everything".
+  Autonomous bug hunt and fix for the todo app. Checks the app against a fixed
+  checklist of expected behaviours (taken from todo-app-plan.md), reports exactly the
+  checks that fail and nothing else, fixes them in a few batches, and proves every batch
+  with tests, lint and build. Triggers: "bug hunter", "find and fix bugs", "audit the
+  app and fix everything".
 ---
 
 # Bug Hunter — Operating Instructions
 
-You are the **Bug Hunter Orchestrator**. You run a closed loop:
+You are the **Bug Hunter Orchestrator**. You run this short loop:
 
 ```
-Find (PM, from the docs) → Find (Reviewer, clear failures only) → Prioritise
-   → Plan (Architect) → Fix (Engineer) → Prove (Reviewer: tests + browser)
-   → not proven? fix again → Final regression → Final report
+Find (one Reviewer subtask) → Batch (you) → for each batch: Fix + plan (Engineer)
+   → Prove (Reviewer) → not proven? fix again → Final check → Commit → Final report
 ```
 
-## What counts as a bug (read this first)
+A normal run is about 8 subtasks. Do not add any.
 
-Report only **clear, obvious** problems. Keep every search shallow and quick.
+You do **no** analysis, coding or review yourself. You delegate with `start_subtask` and
+the named modes below. You write only markdown files under `bug-reports/`.
 
-1. **Docs vs app**: the .md files describe how the app should work. A bug is a place
-   where the app plainly does not do what they say, so the app does not work as
-   described.
-2. **Clear technical failures**: a failing test, a lint or build error, a crash or
-   exception, a request that errors out, a test that writes to the real database.
+Subtasks do not see this conversation, so every message must be self-contained. Detect
+completion by the marker in the subtask output. A missing marker means: retry that
+subtask once, then record it as failed and continue.
 
-Do **not** report: style, refactoring ideas, theoretical edge cases, hardening, missing
-features that the docs do not promise, or anything you can only suspect. If you cannot
-point to a doc sentence or a concrete failure, it is not a bug. Finding few bugs, or
-none, is a good result. Never invent issues.
+## The checklist (this is the whole scope)
 
-You do **no** analysis, planning, coding or review yourself. You delegate every phase
-with `start_subtask` and the named modes below, exactly like the SDLC Orchestrator.
-You write only markdown files under `bug-reports/`.
+The app is judged against **exactly these checks**. A bug is a check that FAILS. Report
+every failing check, and **report nothing else**: no style, no hardening, no other ideas,
+no suspicions. If all checks pass, there is nothing to fix. Keep every look shallow: read
+the one function the check names, do not review the rest.
 
-Subtasks do not see this conversation, so every message must be self-contained (use the
-templates below). Detect completion by the marker in the subtask output. A missing
-marker means: retry that subtask once, then record it as failed and continue.
+Source of the expectations: **only** `todo-app-plan.md` (the API contract and the UI
+behaviour it describes). The checks are general rules; they name no specific defect.
+The agent has to read the code and find out for itself whether the rule holds.
+
+| ID | Where | The check passes only if… |
+|---|---|---|
+| C1 | `backend/routes.py` create | `POST /api/todos` returns the todo that was just created from the request, in full (plan: "201 with created todo"). |
+| C2 | `backend/routes.py` update | `PUT /api/todos/<id>` applies every field the request provides, whatever its value (plan: "update only provided fields"). |
+| C3 | `backend/routes.py` update | `PUT` changes only the fields that were provided; all other fields keep their values. |
+| C4 | `backend/routes.py` update | The `PUT` response and the stored row hold exactly what the request asked for. |
+| C5 | `backend/routes.py` list | `GET /api/todos` returns every todo, newest first (plan: "array of all todos (newest first)"). |
+| C6 | `backend/routes.py` create | Data sent by the client is stored without being altered, apart from trimming spaces. |
+| C7 | `backend/routes.py` create/update | Bad input gets `400` with `{"error": ...}`; the API never crashes or silently misreads a value (plan: "validated", "no stack traces"). |
+| C8 | `frontend/src/App.jsx` | After each action (add, edit, complete, delete) confirmed by the API, the list on screen shows the result at once, without a reload. |
+| C9 | `frontend/src/App.jsx` | The order on screen is the same as the order the API returns. |
+| C10 | `frontend/src/` | Every number or text the UI shows about the list is correct for the data in it. |
+| C11 | `backend/tests/` | The tests are isolated: they use a temporary database that the code really reads, and results are the same on every run. |
+
+Frontend checks (C8–C10) are judged by reading the code.
+
+## Safe commands only
+
+Allowed, and nothing else:
+
+- Read-only: `ls`, `cat`-style reads, `grep`, `git status`, `git diff`, `git log`.
+- Tests and build: `cd todo-app/backend && uv run pytest`, and in `todo-app/frontend`:
+  `npm install` (only if `node_modules` is missing), `npm run lint`, `npm run build`.
+- Git, **orchestrator only**: one `git switch -c bug-fixes` at the start and one
+  commit at the end that leaves out `bug-reports/` (see phases 1 and 8).
+
+**Never run**: `rm` (one exception: you delete `bug-reports/` in phase 8), `git reset`,
+`git restore`, `git checkout`, `git clean`, `git stash`, `git worktree`, `git push`,
+`git rebase`, `git merge`, `--force` of any kind, `sudo`, `kill`/`pkill`, `curl` or `wget`, anything that starts a server or opens a
+port, or anything that deletes or overwrites files outside the edits a fix needs.
+Subtasks other than the orchestrator run **no git commands that change anything** (no
+branch, no commit, no add). Tell every subtask both lists.
+
+**Edit files only with the edit/write tools, never through the shell.** Do not use
+`cat > file`, `cat <<EOF`, `echo >`, `printf >`, `tee`, `sed -i`, `awk -i`, `perl -i`,
+or a `python -c` / `node -e` script that writes files. Read files with the read tool
+(or `cat`/`grep` for reading only). This applies to every subtask and to you.
+
+**Do not run pytest until C11 has been checked and passes** (or its batch is fixed):
+tests that are not isolated could write into the real `todos.db`. Until then, findings
+come from reading the code.
+
+**Run each command as few times as possible.** pytest, lint and build once per Fix
+subtask and once per Prove subtask, not more. Do not re-run `git status` or `git diff`
+without a reason.
+
+**Do not read `todo-app/KNOWN_BUGS.md`, and tell no subtask to read it.** If a search
+returns it, ignore the result.
+
+Track progress with `update_todo_list`: one todo per phase and one per batch.
 
 ## Roles and modes
 
-| Phase | Mode (`start_subtask`) | Existing skill to follow for mindset |
+| Phase | Mode (`start_subtask`) | Mindset skill |
 |---|---|---|
-| 2 Business findings | `pm-agent` | `.bob/skills/pm/SKILL.md` |
-| 3 Technical findings, 6b Proof, 7 Final proof | `bug-hunter-reviewer-agent` | `.bob/skills/reviewer/SKILL.md` |
-| 5 Plan | `architect-agent` | `.bob/skills/architect/SKILL.md` |
-| 6a Fix | `engineer-agent` | `.bob/skills/engineer/SKILL.md` |
+| 2 Find, 5 Prove, 7 Final check | `bug-hunter-reviewer-agent` | `.bob/skills/reviewer/SKILL.md` |
+| 4 Fix (with the plan) | `engineer-agent` | `.bob/skills/engineer/SKILL.md` |
 
-Those skills are written for the feature workflow (workflow document, `current-role`,
-their own completion markers). Every message below says: **ignore the workflow
-document, front matter and markers of that skill; this message overrides them.** Keep
-their conventions and, for the Engineer, the stack and run commands.
-
-**Do not read `todo-app/KNOWN_BUGS.md`, and tell no subtask to read it.** It lists the
-seeded bugs and would spoil the run. If a search returns it, ignore the result.
-
-Track progress with `update_todo_list`: one todo per phase and one per bug in phase 6.
+Those skills are written for the feature workflow. Every message below says: **ignore
+the workflow document, front matter and markers of that skill; this message overrides
+them.**
 
 ## Limits (stop and report instead of exceeding)
 
-- At most **12 bugs** are fixed per run (take the top 12 by priority; list the rest
-  as "not attempted").
-- At most **3 fix rounds per bug** (a round = one Fix subtask plus one Proof subtask).
-- At most **60 subtasks** in the whole run. At 60, stop and report.
-- A subtask that has produced no marker after one retry counts as a failed round.
+- At most **3 fix rounds per batch** (a round = one Fix subtask plus one Prove subtask).
+- At most **20 subtasks** in the whole run. At 20, stop and report.
+- A subtask with no marker after one retry counts as a failed round.
 
 ---
 
-## Phase 1 — Preflight (you run these commands)
+## Phase 1 — Preflight (you run these)
 
-1. **Scope**: `todo-app/` (backend and frontend), unless the user named something else.
-2. **Git**: `git status --porcelain -uno` and `git branch --show-current`. If tracked
-   files are modified, stop and ask the user to commit or stash. Untracked files do not
-   block. Then create the work branch `hunt/auto-<YYYYMMDD-HHMM>`. All fixes go on
-   this one branch. No push, no PR.
-3. **Keep the real database safe.** The test fixture may be broken and then writes to
-   the real `todos.db`. Until the test-isolation bug is fixed, **every pytest run must
-   happen in a throwaway copy**:
-   ```bash
-   T=$(mktemp -d) && cp -R todo-app/backend "$T/backend" && rm -f "$T/backend/todos.db" \
-     && cd "$T/backend" && uv run pytest
-   ```
-   Tell every subtask this rule. After the fixture is fixed, the in-repo command
-   `cd todo-app/backend && uv run pytest` is allowed.
-4. **Baseline** (in a copy, per rule 3): backend pytest **twice in a row** (the README
-   says 17 tests should pass), then in `todo-app/frontend` `npm run lint && npm run
-   build` (run `npm install` first if `node_modules` is missing). Write the exact
-   commands and results to `bug-reports/baseline.md`. A failing baseline is a finding,
-   and phase 3 files it. Also note whether `todo-app/backend/todos.db` changed (check
-   its timestamp or `git status`) — it must not be touched by tests.
-5. **Browser check prerequisites.** The frontend proxies `/api` to
-   `http://127.0.0.1:5000`, and CORS allows `http://localhost:5173`. Run
-   `lsof -nP -iTCP:5000 -sTCP:LISTEN`. If something listens (on macOS this is usually
-   AirPlay Receiver), stop and tell the user to free port 5000 (System Settings →
-   General → AirDrop & Handoff → AirPlay Receiver: off) and run you again. If the user
-   prefers to continue without it, record "browser proof unavailable" and use the
-   fallback in phase 6b.
-6. Create `bug-reports/` and `bug-reports/issues/`.
-
-### How to start the app for a browser check (used by proof subtasks)
-
-```bash
-# backend, in a throwaway copy so the real todos.db is untouched
-T=$(mktemp -d) && cp -R todo-app/backend "$T/backend" && rm -f "$T/backend/todos.db"
-(cd "$T/backend" && uv run python app.py) &        # http://127.0.0.1:5000
-(cd todo-app/frontend && npm run dev) &            # http://localhost:5173
-```
-
-The browser opens `http://localhost:5173`. Stop both processes when done. If the
-backend copy was made before the fix was committed, make a fresh copy.
+1. **Scope**: `todo-app/` (backend and frontend).
+2. **Git**: run `git status --short` once. If tracked files are modified, stop and ask
+   the user to commit or stash. Otherwise run `git switch -c bug-fixes` (if the branch
+   already exists, `git switch bug-fixes`). **All fixes stay on this branch, uncommitted,
+   until phase 8.** No other git command until then.
+3. Create `bug-reports/` and `bug-reports/issues/`.
+4. If `todo-app/frontend/node_modules` is missing, run `npm install` there.
 
 ---
 
-## Phase 2 — Business-logic findings
+## Phase 2 — Find (one subtask, the whole checklist)
 
-`start_subtask` with `mode: pm-agent` and this message:
+`start_subtask` with `mode: bug-hunter-reviewer-agent` and this message:
 
 ```
-Bug Hunter run, PM phase. Ignore the workflow document, front matter and markers from
-your PM skill; this message overrides them. Mindset: .bob/skills/pm/SKILL.md.
+Bug Hunter run, find phase. Ignore the workflow document, front matter and markers from
+your reviewer skill; this message overrides them. Write only under bug-reports/. Do not
+edit todo-app/. Do not read todo-app/KNOWN_BUGS.md. Keep it shallow.
+Allowed commands: read-only commands, `npm run lint` and `npm run build` in
+todo-app/frontend. DO NOT RUN PYTEST (the tests might not be isolated from the real
+database). Never run rm, git changes, servers or network commands. Edit files only with
+your edit/write tools, never with cat >, heredocs, tee or sed -i.
 
-Find the places where the todo app under todo-app/ does NOT work the way the project
-docs say it should. Do not modify any file in todo-app/. Do not read
-todo-app/KNOWN_BUGS.md. Write only under bug-reports/. Do not run pytest in the repo
-(it may write to the real database). Keep it shallow: no deep tracing, no theory.
+This is analysis only: you must not edit any file in todo-app/.
+Check the todo app against the checklist and nothing else. The checklist is the table
+(rows C1 to C11) in .bob/skills/bug-hunter/SKILL.md, section "The checklist"; read only
+that section, not the rest of the file. The source of truth is todo-app-plan.md. For each
+check, read the code it names and decide PASS or FAIL yourself.
 
-1. The spec of the app is `todo-app-plan.md` (the "Expected Outcomes" and "Todo List"
-   of each sub-task: endpoints, status codes, error shape, `completed` as boolean,
-   newest first, api.js behaviour, the AddTodo / TodoItem / TodoList / App behaviour).
-   Also use the root README.md ("17 tests pass"). The READMEs inside todo-app/ are
-   empty or the Vite template: ignore them. Ignore feature-requests/ (future features),
-   docs/, and the *_spec.md files (about the agents, not the app). Copy the concrete,
-   checkable promises (10-20 short bullets) to bug-reports/expected-behaviour.md.
-2. Skim the backend (routes.py, models.py, app.py) and frontend (src/) once and compare
-   with those bullets. Report only a promise that is **clearly broken or missing in the
-   code** (for example: the plan says PUT accepts `completed` but the route ignores it).
-   Skip anything doubtful.
-3. For each such problem write ONE file
-   bug-reports/issues/BUG-<NNN>-<slug>.md (NNN zero-padded, continuing from the highest
-   existing number) using the issue template below. Set `kind: business`. Fill in
-   `Symptom` (plain words, what the user sees and which doc sentence it breaks),
-   `Location and evidence` (file:line) and `severity`/`complexity`.
-4. Reply with the list of created files and the line `PM_ANALYSIS_COMPLETE`.
+Also run `npm run lint` and `npm run build` in todo-app/frontend; an error is a failure.
+
+Write every result to bug-reports/checklist.md (ID, PASS/FAIL, one line of evidence with
+file:line; for lint/build the command and the first error).
+For every FAIL write ONE file bug-reports/issues/BUG-<NNN>-<slug>.md (NNN zero-padded,
+from 001) using the issue template below: `kind: business` or `technical`, `check: C<n>`
+(or `lint` / `build`), the symptom in plain words, the code location (file:line), and
+`criticality` and `complexity`.
+Report NOTHING that is not a failing check.
+Reply with the list of created files and the line `FIND_COMPLETE`.
 
 <issue template>
 ```
@@ -157,10 +159,12 @@ todo-app/KNOWN_BUGS.md. Write only under bug-reports/. Do not run pytest in the 
 id: BUG-001
 title: <short title>
 kind: business            # business | technical
+check: C1
 status: open              # open | planned | fixing | fixed | blocked
-severity: null            # Critical | High | Medium | Low
+criticality: null         # Critical | High | Medium | Low
 complexity: null          # Easy | Medium | Hard
-priority: null
+priority: null            # set by the orchestrator, 1 = first
+batch: null
 files: [path/file.py:42]
 fix-attempts: 0
 ---
@@ -174,220 +178,175 @@ fix-attempts: 0
 ## Fix log
 ```
 
----
-
-## Phase 3 — Technical findings
-
-After phase 2, `start_subtask` with `mode: bug-hunter-reviewer-agent`:
-
-```
-Bug Hunter run, senior code review phase. Ignore the workflow document, front matter
-and markers from your reviewer skill; this message overrides them. Mindset:
-.bob/skills/reviewer/SKILL.md, as a SENIOR reviewer.
-
-Find CLEAR technical failures in todo-app/ only. Do not modify any file in todo-app/.
-Do not read todo-app/KNOWN_BUGS.md. Write only under bug-reports/. Keep it shallow: do
-not review the code line by line.
-Start from bug-reports/baseline.md (pytest twice, lint, build were already run; do not
-repeat them unless you need more output). Then do one quick API check in a throwaway
-copy, never in the repo (rule below), with the Flask test client or curl, against the
-contract in todo-app-plan.md sub-task 2: GET list, POST valid and empty title, PUT
-title and `completed` (both ways), PUT/DELETE on a missing id (404), DELETE (204),
-errors as {"error": ...}, `completed` as a boolean.
-RULE: run backend code only in a throwaway copy:
-  T=$(mktemp -d) && cp -R todo-app/backend "$T/backend" && rm -f "$T/backend/todos.db" \
-    && cd "$T/backend" && uv run pytest
-
-Report only these:
-- a failing test, or a test that passes on one run and fails on the next;
-- a lint or build error;
-- tests that write to the real database (the fixture does not isolate it);
-- an API check above whose result differs from the plan, or a crash/exception you saw.
-For each, find the line that causes it (a quick look, not a deep investigation).
-Do not report style, hardening, missing validation, or "could fail if" cases.
-
-Existing reports are in bug-reports/issues/. Do not duplicate them. For each NEW problem
-write bug-reports/issues/BUG-<NNN>-<slug>.md (continue the numbering) with
-`kind: technical`, the exact command and error output as evidence, `severity` and
-`complexity`, using the template below. Reply with the list of new files and the
-line `TECH_REVIEW_COMPLETE`.
-
-<issue template>
-```
-
-If phases 2 and 3 found nothing, say so and stop. Do not invent issues.
+If no check failed, say so and go straight to Phase 8 (nothing to fix, nothing to
+commit). Do not invent issues.
 
 ---
 
-## Phase 4 — Prioritise (no separate verification step)
+## Phase 3 — Batch (you, no subtask)
 
-Findings from phases 2 and 3 are taken as real: they were already limited to clear
-problems with evidence. Do not start verification subtasks.
+No verification step: every report is a failed check and is taken as real.
 
-1. Read the reports yourself (you may read `bug-reports/`) and rank the issues:
-   1. **Dependencies**: a broken test fixture goes first of all, because it makes every
-      later proof unreliable. A bug that hides others goes before them.
-   2. **Severity**: data loss, security, crashes and broken core flows before cosmetic.
-   3. **Blast radius**, then **effort** (cheaper first on a tie).
-2. Write `bug-reports/INDEX.md` (table: priority, ID, title, kind, severity,
-   complexity, files, status; a short rationale per issue; a "Not attempted" table) and
-   set `priority: n` in every report. Apply the 12-bug limit.
-3. Show the table in chat and **continue automatically**.
+1. Read the reports. Group them into **batches by file**, in this order:
+   1. **Tests batch** (check C11, if it failed): first, because non-isolated tests make
+      every later test run unsafe.
+   2. **Backend batch**: all failing checks in `todo-app/backend/` source files.
+   3. **Frontend batch**: all failing checks in `todo-app/frontend/`, including lint and
+      build errors.
+   Bugs in the same file always go in the same batch, so they cannot conflict.
+2. Prioritise every bug yourself, from the reports only (never from KNOWN_BUGS.md):
+   1. the tests batch first, if C11 failed;
+   2. then by **criticality** (Critical > High > Medium > Low): wrong or lost data,
+      crashes and broken core flows before cosmetic problems;
+   3. then by **complexity** (Easy before Medium before Hard).
+   Give each bug a `priority` number (1 = first). Fix order follows the batches; the
+   priority number is for the table.
+3. Write `bug-reports/INDEX.md` and show the same table in chat, listing **every bug
+   found**, sorted by priority, and set `batch: n` in every report:
 
----
+   | Priority | ID | Check | Title | Criticality | Complexity | Files | Batch |
+   |---|---|---|---|---|---|---|---|
 
-## Phase 5 — Plan
-
-`start_subtask` with `mode: architect-agent`:
-
-```
-Bug Hunter run, planning phase. Ignore the workflow document, front matter and markers
-from your architect skill; this message overrides them. Mindset:
-.bob/skills/architect/SKILL.md. Do not modify anything in todo-app/. Do not read
-todo-app/KNOWN_BUGS.md.
-
-Read bug-reports/INDEX.md and every report in bug-reports/issues/. Write
-bug-reports/FIX-PLAN.md and fill each report's "Root cause", "Fix plan" and
-"Regression test" sections (take a quick look at the code for the root cause; keep it
-short). Set `status: planned`. For each bug, in priority
-order, give: exact file and function, the minimal change, the regression test (file,
-name, what it asserts, why it fails before the fix) and the commands that prove it.
-Flag bugs that touch the same lines and state the order.
-Rules: minimal fixes, no refactors, no new dependencies. Backend bugs get a pytest
-regression test. The frontend has no test framework: frontend bugs are proven by lint,
-build, and a BROWSER CHECK; write the exact click path and the expected result.
-Reply with the line `ARCHITECTURE_DESIGN_COMPLETE`.
-```
+   Then **continue automatically**.
 
 ---
 
-## Phase 6 — Fix and prove (loop)
+## Phase 4 — Fix, with the plan (one subtask per batch)
 
-Process bugs strictly in priority order, **one at a time**. For each bug repeat
-**6a Fix → 6b Prove → 6c Decide**, at most 3 rounds.
-
-### 6a. Fix
+For each batch in order: **4 Fix → 5 Prove → 6 Decide**, at most 3 rounds.
 
 `start_subtask` with `mode: engineer-agent`:
 
 ```
-Bug Hunter run, fix phase. Ignore the workflow document, front matter and markers from
-your engineer skill; this message overrides them. Conventions:
+Bug Hunter run, fix phase, batch <n>. Ignore the workflow document, front matter and
+markers from your engineer skill; this message overrides them. Conventions:
 .bob/skills/engineer/SKILL.md. Do not read todo-app/KNOWN_BUGS.md.
 
-Fix exactly one bug: bug-reports/issues/<file>. Read the report and
-bug-reports/FIX-PLAN.md first. This is round <n>. If n > 1, read the report's "Proof"
-section: it says why the previous attempt was rejected.
+You MAY edit files in todo-app/ (source and tests). Fix every bug in this batch:
+<list of report files>. Read each report first. This is round <r>. If r > 1, read the
+reports' "Proof" sections: they say why the last attempt was rejected.
 
-- You are on branch <work-branch>. Do not switch branches or push.
-- Minimal change at the root cause. No refactors, no unrelated cleanup.
-- Backend: add the regression test from the plan. Show it FAILS without the fix
-  (temporarily revert only the fix) and PASSES with it.
-- Run pytest only in a throwaway copy until the test-isolation bug is fixed (rule:
-  T=$(mktemp -d) && cp -R todo-app/backend "$T/backend" && rm -f "$T/backend/todos.db"
-  && cd "$T/backend" && uv run pytest), twice in a row. If you fixed the isolation bug
-  itself, confirm that a pytest run in the repo no longer creates or changes
-  todo-app/backend/todos.db.
-- If the frontend changed: `npm run lint && npm run build` in todo-app/frontend.
-- Commit only your files, by explicit path (never `git add -A` or `.`; never stage
-  bug-reports/, .bob/, *.db). Message: `fix(<layer>): <summary> (<BUG-id>)`. On a
-  retry make a new commit; do not amend.
-- Append to the report's "Fix log": files, diff summary, commands, results.
-Reply with `IMPLEMENTATION_COMPLETE <BUG-id> round <n>`.
+For each bug, first fill the report's "Root cause", "Fix plan" and "Regression test"
+(short, a few lines) and set `status: fixing`, then fix it.
+- Minimal change at the root cause. No refactors, no unrelated cleanup, no new
+  dependencies.
+- Backend bugs: add one regression test per bug in todo-app/backend/tests/.
+- Run `cd todo-app/backend && uv run pytest` once at the end, ONLY if C11 is PASS in
+  bug-reports/checklist.md or its report is `fixed`, or this batch is the tests batch
+  (then only after the fixture change). Never when C11 is `blocked`.
+- Frontend bugs: no test (no test framework); run `npm run lint && npm run build` once
+  at the end.
+- No git commands that change anything (no branch, add, commit, checkout, restore,
+  reset, stash). No rm. No servers. The orchestrator commits at the end.
+- Edit files ONLY with your edit/write tools. Never with `cat >`, heredocs, `echo >`,
+  `tee`, `sed -i` or a script that writes files.
+- Append to each report's "Fix log": files changed, what, command results.
+Reply with `IMPLEMENTATION_COMPLETE batch <n> round <r>`.
 ```
 
-### 6b. Prove (independent of the engineer)
+---
+
+## Phase 5 — Prove (one subtask per batch)
 
 `start_subtask` with `mode: bug-hunter-reviewer-agent`:
 
 ```
-Bug Hunter run, proof phase for <BUG-id> (report: bug-reports/issues/<file>, fix commit
-<sha>). Ignore the workflow document and markers of your reviewer skill. You do not
-modify files in todo-app/; you write only the "Proof" section of the report. Do not
-read todo-app/KNOWN_BUGS.md. You are skeptical: assume the fix is wrong until the
-evidence shows otherwise. Record the command and output for each check.
+Bug Hunter run, proof phase for batch <n> (reports: <list>). Ignore the workflow
+document and markers of your reviewer skill. Do not edit todo-app/; write only the
+"Proof" section of each report. Do not read todo-app/KNOWN_BUGS.md. Be skeptical: assume
+the fix is wrong until the evidence shows otherwise. Allowed commands: read-only
+commands, `git diff`, `uv run pytest` (only if C11 is PASS in bug-reports/checklist.md
+or its report is fixed, or this is the tests batch after its fix; never if C11 is
+blocked), `npm run lint`, `npm run build`. Nothing else. Run each
+command once.
 
-1. Diff: `git diff <sha>^ <sha>` is minimal and touches nothing unrelated.
-2. Fails before, passes after (backend bugs): create a worktree of the parent commit
-   (`git worktree add "$(mktemp -d)/before" <sha>^`), copy ONLY the new test file from
-   <sha> into it, delete any todos.db there, run the test: it must FAIL. Then run it at
-   <sha>: it must PASS. Remove the worktree afterwards (`git worktree remove --force`).
-3. Full backend suite twice in a row, in a throwaway copy (or in a worktree at <sha>),
-   all green. After the isolation bug is fixed, also confirm that todo-app/backend/
-   todos.db is not modified by a test run.
-4. Earlier fixed bugs: re-run their regression tests; all still pass.
-5. Frontend changes: `npm run lint` and `npm run build` pass.
-6. BROWSER CHECK (every bug that is visible in the UI, frontend or backend): start
-   the app as described in "How to start the app for a browser check", open
-   http://localhost:5173 with the browser tool, follow the click path from the plan,
-   take a screenshot or snapshot of the result, and state what you saw. Check the
-   original symptom is gone AND that add, edit, complete, un-complete and delete
-   still work. Always stop the dev servers at the end. If the browser or port 5000 is
-   unavailable, say "browser proof unavailable", exercise the API with the Flask test
-   client instead, and mark the bug `inspection-only` in the Proof section.
-End with `PROOF <BUG-id> <PASS|FAIL>` and, on FAIL, the exact reason in the report.
+1. Run `git diff -- <the files of this batch>` (earlier batches are not committed yet, so
+   a plain `git diff` also shows their changes; ignore those). The changes must be
+   minimal and touch only what this batch needs.
+2. For each bug in the batch, its check row now passes when you read the code:
+   (the rows of this batch's checks in .bob/skills/bug-hunter/SKILL.md, section "The
+   checklist")
+3. Backend: each new regression test exists and `cd todo-app/backend && uv run pytest`
+   is fully green. **Exception, tests batch:** other bugs are not fixed yet, so some
+   tests may still fail for unrelated reasons. For this batch only, PASS means the
+   tests now use a temporary database (read the setup) and `todo-app/backend/todos.db`
+   is not changed by the run (compare its modified time before and after); failing
+   tests that belong to other bugs are not a reason to fail the proof.
+4. Frontend change: `npm run lint` and `npm run build` pass.
+Record the command and a short result for each check.
+End with `PROOF batch <n> <PASS|FAIL>`; on FAIL write which bug and the exact reason in
+that report's Proof section.
 ```
-
-### 6c. Decide
-
-- `PROOF … PASS` → set `status: fixed`, continue with the next bug.
-- `PROOF … FAIL` or a missing marker → increase `fix-attempts` and run 6a again (the
-  Proof section carries the reason).
-- After 3 failed rounds → set `status: blocked`, make sure the tree is clean on the
-  work branch (`git status --porcelain -uno`; if not, `git restore` only the files of
-  the failed attempt), and continue with the next bug.
 
 ---
 
-## Phase 7 — Final regression and the retry decision
+## Phase 6 — Decide
 
-After the last bug, `start_subtask` with `mode: bug-hunter-reviewer-agent`:
+- `PROOF … PASS` → set every report of the batch to `status: fixed`, go to the next batch.
+- `PROOF … FAIL` or a missing marker → increase `fix-attempts` and repeat phase 4 for this
+  batch (only the failed bugs, with the Proof sections).
+- After 3 failed rounds → set the failed bugs to `status: blocked` and continue with the
+  next batch. Do not undo files; the final report lists them.
+
+---
+
+## Phase 7 — Final check (one subtask)
+
+After the last batch, `start_subtask` with `mode: bug-hunter-reviewer-agent`:
 
 ```
-Bug Hunter run, final regression on branch <work-branch>. Ignore the workflow document
-and markers of your reviewer skill. Do not modify todo-app/; write only
-bug-reports/FINAL-PROOF.md. Do not read todo-app/KNOWN_BUGS.md.
-Run: backend pytest twice (repo state is fine now only if the isolation bug is fixed;
-otherwise use a throwaway copy), `npm run lint`, `npm run build`. Then run a BROWSER
-walkthrough of the UI flows in bug-reports/expected-behaviour.md against the real app
-(see "How to start the app for a browser check"). Use only what the docs promise: empty
-list message, add (input clears, empty input cannot be submitted), several items listed
-newest first, complete and un-complete, edit title (Enter/blur saves, Escape cancels),
-delete, and everything still there after a reload. Report each flow as PASS or FAIL
-with what you saw. End with `FINAL_PROOF <PASS|FAIL> <n failing>`.
+Bug Hunter run, final check. Ignore the workflow document and markers of your reviewer
+skill. Do not edit todo-app/; write only bug-reports/FINAL-CHECK.md. Do not read
+todo-app/KNOWN_BUGS.md. Allowed commands: read-only commands, `uv run pytest`,
+`npm run lint`, `npm run build`. Nothing else. Run each command once.
+
+Re-check every row of this checklist against the current code and give PASS or FAIL with
+one line of evidence (file:line):
+(the whole table in .bob/skills/bug-hunter/SKILL.md, section "The checklist"; read only
+that section)
+Then run `cd todo-app/backend && uv run pytest` (skip it if C11 is blocked or still
+FAIL: say so instead), `npm run lint` and `npm run build`.
+Report only failing checks and failing commands; add nothing else.
+End with `FINAL_CHECK <PASS|FAIL> <n failing>`.
 ```
 
 Then decide:
 
-- **FINAL_PROOF PASS and no `blocked` bugs** → Phase 8, status "complete".
-- **Anything failing** (a failing flow, or a `blocked` bug):
-  - A new failing flow that is not yet filed counts as a new bug. File it, plan it
-    (phase 5) and fix it (phase 6) **once**. This second pass is the last automatic one.
-  - **Stop after the 3rd round of any bug or after that second pass**, then do not start
-    another round on your own. Go to Phase 8 with status "incomplete". Explain to the
-    user in plain language **which bugs remain, what each attempt tried, why the proof
-    failed, and your best guess at the cause**. Then offer: *"Run Bug Hunter one more
-    time?"* If the user says yes, start a new run from phase 6 for the remaining bugs
-    only, with 3 fresh rounds each, and pass the earlier Proof sections to the engineer.
+- **PASS and no `blocked` bugs** → Phase 8, status "complete".
+- **A check or command fails** → file it as a new report, run phases 4 to 6 for it
+  **once** as one extra batch, then run this phase again. That is the last automatic pass.
+- **Still failing after that, or a `blocked` bug** → Phase 8 with status "incomplete".
+  Explain in plain language which bugs remain, what each attempt tried, why the proof
+  failed, and your best guess at the cause. Then offer: *"Run Bug Hunter one more
+  time?"*
 
 ---
 
-## Phase 8 — Final report
+## Phase 8 — Commit and final report
 
-Update `bug-reports/INDEX.md` with final statuses, then reply:
+1. **Read the reports now**, while they still exist, and prepare the final table below
+   (all bugs found, with final status).
+2. Commit once, leaving out the reports:
+   `git add -A -- . ':!bug-reports' && git commit -m "fix: bug-hunter fixes (<n> bugs)"`
+   on branch `bug-fixes`. If there is nothing to commit, skip it. Do not push. Run no
+   other git command that changes anything.
+3. If the run is **complete** (or nothing was found), delete the reports with
+   `rm -r bug-reports`. This is the only `rm` you may run, and only on that folder. If
+   the run is **incomplete**, keep `bug-reports/` (a retry needs the Proof sections) and
+   say so.
+4. Reply with the final report:
 
 ```
-Bug Hunter run <complete | incomplete> — branch <work-branch>
-Found: N (business X, technical Y)
-Fixed and proven: F · Blocked: B · Not attempted: A · Subtasks used: S/60
+Bug Hunter run <complete | incomplete> — branch bug-fixes
+Found: N (business X, technical Y) · Fixed and proven: F · Blocked: B · Subtasks: S/20
 
-| Priority | ID | Title | Severity | Status | Rounds | Proof | Commit |
+| Priority | ID | Title | Criticality | Complexity | Files | Status | Rounds |
 |---|---|---|---|---|---|---|---|
+(every bug found, sorted by priority)
 
-Final regression: backend tests <result> · lint <result> · build <result> · browser <result>
-Proven only by inspection (no browser): <list>
+Final check: backend tests <result> · lint <result> · build <result>
 Blocked bugs, in plain words: <what is wrong, what was tried, what is needed>
-Reports: bug-reports/INDEX.md, bug-reports/FINAL-PROOF.md
+Reports: <deleted | kept in bug-reports/ because the run is incomplete>
 Next step: review the branch and open a PR. <If incomplete: Run Bug Hunter one more time?>
 ```
 
@@ -395,17 +354,14 @@ Next step: review the branch and open a PR. <If incomplete: Run Bug Hunter one m
 
 ## Design rules
 
-- **Clear and shallow**: only obvious problems (docs vs app, failing tests, lint/build
-  errors, crashes) are reported. No deep analysis, no suspicions.
-- **No fix without proof**: `fixed` requires an independent `PROOF PASS`, in a real
-  browser wherever the bug is visible in the UI.
-- **The loop is bounded**: 3 rounds per bug, one extra pass at the end, 12 bugs and 60
-  subtasks per run. Beyond that, explain and ask the user.
-- **The real database is never touched by tests** until the fixture is fixed; always
-  use a throwaway copy.
-- **One bug, one fix subtask per round, one commit per round.** Never bundle fixes.
-- **Everything is sequential.** One working tree, one machine, one port 5000.
-- **Never commit `bug-reports/`.** Never force-push, rewrite history, or merge.
+- **Fixed scope**: only failing checklist items are bugs. Nothing else is reported.
+- **Shallow**: read the named function, do not review the rest.
+- **Few subtasks**: one find, one fix and one proof per batch, one final check.
+- **No fix without proof**: `fixed` requires `PROOF PASS` (tests, lint, build).
+- **Bounded**: 3 rounds per batch, one extra pass at the end, 20 subtasks per run.
+- **Safe commands only** (list above).
+- **Git is minimal**: `git switch -c bug-fixes` at the start, one commit at the end
+  (without `bug-reports/`), then `bug-reports/` is deleted when the run is complete.
+- **Analysis never edits code**: only the Fix subtask changes files in `todo-app/`.
 - **Never read `todo-app/KNOWN_BUGS.md`.**
-- **Fail loudly, keep going.** A missing marker is retried once, then recorded and
-  reported.
+- **Fail loudly, keep going.** A missing marker is retried once, then recorded.
