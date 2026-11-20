@@ -1,9 +1,10 @@
 ---
 name: bug-hunter
 description: >-
-  Autonomous bug hunt and fix for the todo app. Acts as PM to find business-logic
-  problems, as senior code reviewer to find technical bugs, prioritises them, plans
-  the fixes, fixes them, and proves every fix in tests and in a real browser,
+  Autonomous bug hunt and fix for the todo app. Uses the project's .md docs to learn
+  how the app should work, finds what keeps it from working that way plus clear
+  technical failures (failing tests, lint/build errors, crashes), prioritises them,
+  plans the fixes, fixes them, and proves every fix in tests and in a real browser,
   repeating until all are fixed. Triggers: "bug hunter", "find and fix bugs",
   "audit the app and fix everything".
 ---
@@ -13,10 +14,25 @@ description: >-
 You are the **Bug Hunter Orchestrator**. You run a closed loop:
 
 ```
-Find (PM) → Find (Senior Reviewer) → Verify + Prioritise → Plan (Architect)
-   → Fix (Engineer) → Prove (Reviewer: tests + browser) → not proven? fix again
-   → Final regression → Final report
+Find (PM, from the docs) → Find (Reviewer, clear failures only) → Prioritise
+   → Plan (Architect) → Fix (Engineer) → Prove (Reviewer: tests + browser)
+   → not proven? fix again → Final regression → Final report
 ```
+
+## What counts as a bug (read this first)
+
+Report only **clear, obvious** problems. Keep every search shallow and quick.
+
+1. **Docs vs app**: the .md files describe how the app should work. A bug is a place
+   where the app plainly does not do what they say, so the app does not work as
+   described.
+2. **Clear technical failures**: a failing test, a lint or build error, a crash or
+   exception, a request that errors out, a test that writes to the real database.
+
+Do **not** report: style, refactoring ideas, theoretical edge cases, hardening, missing
+features that the docs do not promise, or anything you can only suspect. If you cannot
+point to a doc sentence or a concrete failure, it is not a bug. Finding few bugs, or
+none, is a good result. Never invent issues.
 
 You do **no** analysis, planning, coding or review yourself. You delegate every phase
 with `start_subtask` and the named modes below, exactly like the SDLC Orchestrator.
@@ -31,7 +47,7 @@ marker means: retry that subtask once, then record it as failed and continue.
 | Phase | Mode (`start_subtask`) | Existing skill to follow for mindset |
 |---|---|---|
 | 2 Business findings | `pm-agent` | `.bob/skills/pm/SKILL.md` |
-| 3 Technical findings, 4 Verify, 6b Proof, 7 Final proof | `bug-hunter-reviewer-agent` | `.bob/skills/reviewer/SKILL.md` |
+| 3 Technical findings, 6b Proof, 7 Final proof | `bug-hunter-reviewer-agent` | `.bob/skills/reviewer/SKILL.md` |
 | 5 Plan | `architect-agent` | `.bob/skills/architect/SKILL.md` |
 | 6a Fix | `engineer-agent` | `.bob/skills/engineer/SKILL.md` |
 
@@ -71,9 +87,12 @@ Track progress with `update_todo_list`: one todo per phase and one per bug in ph
    ```
    Tell every subtask this rule. After the fixture is fixed, the in-repo command
    `cd todo-app/backend && uv run pytest` is allowed.
-4. **Baseline** (in a copy, per rule 3): backend pytest, then in `todo-app/frontend`
-   `npm run lint && npm run build` (run `npm install` first if `node_modules` is
-   missing). Record the exact results. A failing baseline is itself a finding.
+4. **Baseline** (in a copy, per rule 3): backend pytest **twice in a row** (the README
+   says 17 tests should pass), then in `todo-app/frontend` `npm run lint && npm run
+   build` (run `npm install` first if `node_modules` is missing). Write the exact
+   commands and results to `bug-reports/baseline.md`. A failing baseline is a finding,
+   and phase 3 files it. Also note whether `todo-app/backend/todos.db` changed (check
+   its timestamp or `git status`) — it must not be touched by tests.
 5. **Browser check prerequisites.** The frontend proxies `/api` to
    `http://127.0.0.1:5000`, and CORS allows `http://localhost:5173`. Run
    `lsof -nP -iTCP:5000 -sTCP:LISTEN`. If something listens (on macOS this is usually
@@ -105,26 +124,27 @@ backend copy was made before the fix was committed, make a fresh copy.
 Bug Hunter run, PM phase. Ignore the workflow document, front matter and markers from
 your PM skill; this message overrides them. Mindset: .bob/skills/pm/SKILL.md.
 
-Find BUSINESS-LOGIC problems in the todo app under todo-app/ by comparing what the app
-SHOULD do with what it DOES. Do not modify any file in todo-app/. Do not read
+Find the places where the todo app under todo-app/ does NOT work the way the project
+docs say it should. Do not modify any file in todo-app/. Do not read
 todo-app/KNOWN_BUGS.md. Write only under bug-reports/. Do not run pytest in the repo
-(it may write to the real database); you do not need to run anything.
+(it may write to the real database). Keep it shallow: no deep tracing, no theory.
 
-1. Read the backend (models.py, routes.py, app.py), the frontend (src/), README.md and
-   feature-requests/ for intent. Write 8-15 short user stories with acceptance criteria
-   to bug-reports/expected-behaviour.md. Cover at least: add, list (including more
-   than five items), long titles, edit title, edit keeps completed state, complete and
-   UN-complete, delete, ordering, the completed counter, persistence after reload,
-   validation, no silent data loss.
-2. Check every criterion against the actual code. Trace the data from the UI action
-   through the API and database back to what the UI shows. Look for wrong results,
-   state not updating, data changed or lost silently, limits, off-by-one,
-   falsy-vs-missing checks, UI and API disagreeing.
-3. For each violated criterion write ONE file
+1. The spec of the app is `todo-app-plan.md` (the "Expected Outcomes" and "Todo List"
+   of each sub-task: endpoints, status codes, error shape, `completed` as boolean,
+   newest first, api.js behaviour, the AddTodo / TodoItem / TodoList / App behaviour).
+   Also use the root README.md ("17 tests pass"). The READMEs inside todo-app/ are
+   empty or the Vite template: ignore them. Ignore feature-requests/ (future features),
+   docs/, and the *_spec.md files (about the agents, not the app). Copy the concrete,
+   checkable promises (10-20 short bullets) to bug-reports/expected-behaviour.md.
+2. Skim the backend (routes.py, models.py, app.py) and frontend (src/) once and compare
+   with those bullets. Report only a promise that is **clearly broken or missing in the
+   code** (for example: the plan says PUT accepts `completed` but the route ignores it).
+   Skip anything doubtful.
+3. For each such problem write ONE file
    bug-reports/issues/BUG-<NNN>-<slug>.md (NNN zero-padded, continuing from the highest
-   existing number) using the issue template below. Set `kind: business`; use
-   `kind: suspicion` for doubtful ones. Describe the user-visible symptom in plain words,
-   then the code location (file:line).
+   existing number) using the issue template below. Set `kind: business`. Fill in
+   `Symptom` (plain words, what the user sees and which doc sentence it breaks),
+   `Location and evidence` (file:line) and `severity`/`complexity`.
 4. Reply with the list of created files and the line `PM_ANALYSIS_COMPLETE`.
 
 <issue template>
@@ -136,8 +156,8 @@ todo-app/KNOWN_BUGS.md. Write only under bug-reports/. Do not run pytest in the 
 ---
 id: BUG-001
 title: <short title>
-kind: business            # business | technical | suspicion
-status: candidate         # candidate | confirmed | rejected | planned | fixing | fixed | blocked
+kind: business            # business | technical
+status: open              # open | planned | fixing | fixed | blocked
 severity: null            # Critical | High | Medium | Low
 complexity: null          # Easy | Medium | Hard
 priority: null
@@ -165,27 +185,31 @@ Bug Hunter run, senior code review phase. Ignore the workflow document, front ma
 and markers from your reviewer skill; this message overrides them. Mindset:
 .bob/skills/reviewer/SKILL.md, as a SENIOR reviewer.
 
-Find TECHNICAL bugs in todo-app/. Do not modify any file in todo-app/. Do not read
-todo-app/KNOWN_BUGS.md. Write only under bug-reports/.
-RULE: run pytest only in a throwaway copy, never in the repo:
+Find CLEAR technical failures in todo-app/ only. Do not modify any file in todo-app/.
+Do not read todo-app/KNOWN_BUGS.md. Write only under bug-reports/. Keep it shallow: do
+not review the code line by line.
+Start from bug-reports/baseline.md (pytest twice, lint, build were already run; do not
+repeat them unless you need more output). Then do one quick API check in a throwaway
+copy, never in the repo (rule below), with the Flask test client or curl, against the
+contract in todo-app-plan.md sub-task 2: GET list, POST valid and empty title, PUT
+title and `completed` (both ways), PUT/DELETE on a missing id (404), DELETE (204),
+errors as {"error": ...}, `completed` as a boolean.
+RULE: run backend code only in a throwaway copy:
   T=$(mktemp -d) && cp -R todo-app/backend "$T/backend" && rm -f "$T/backend/todos.db" \
     && cd "$T/backend" && uv run pytest
-Run it twice in a row. Also run `npm run lint` and `npm run build` in todo-app/frontend.
 
-Review at least:
-- Tests: do they pass on both runs? Are they isolated from the real database? Does the
-  fixture patch what the code actually reads? Do they cover edge cases (un-complete,
-  more than five items, long input, wrong types)?
-- Backend: wrong cursor/ID usage, missing commits, input validation and types, status
-  codes, error shapes, SQL safety, unhandled None, debug/security settings, CORS.
-- Frontend: state mutation, stale state, keys, unhandled errors, wrong API calls,
-  contract mismatch with the backend.
-- Config: ports, proxy, dependencies.
+Report only these:
+- a failing test, or a test that passes on one run and fails on the next;
+- a lint or build error;
+- tests that write to the real database (the fixture does not isolate it);
+- an API check above whose result differs from the plan, or a crash/exception you saw.
+For each, find the line that causes it (a quick look, not a deep investigation).
+Do not report style, hardening, missing validation, or "could fail if" cases.
 
-Existing reports are in bug-reports/issues/. Do not duplicate them; if you have extra
-evidence for one, append it under its "Location and evidence". For each NEW problem
+Existing reports are in bug-reports/issues/. Do not duplicate them. For each NEW problem
 write bug-reports/issues/BUG-<NNN>-<slug>.md (continue the numbering) with
-`kind: technical`, using the template below. Reply with the list of new files and the
+`kind: technical`, the exact command and error output as evidence, `severity` and
+`complexity`, using the template below. Reply with the list of new files and the
 line `TECH_REVIEW_COMPLETE`.
 
 <issue template>
@@ -195,30 +219,20 @@ If phases 2 and 3 found nothing, say so and stop. Do not invent issues.
 
 ---
 
-## Phase 4 — Verify and prioritise
+## Phase 4 — Prioritise (no separate verification step)
 
-1. For every `candidate`, `start_subtask` with `mode: bug-hunter-reviewer-agent`, one per
-   finding, **sequentially** (subtasks share the machine; keep it simple and safe):
+Findings from phases 2 and 3 are taken as real: they were already limited to clear
+problems with evidence. Do not start verification subtasks.
 
-   ```
-   Bug Hunter run, verification of bug-reports/issues/<file>. Ignore the workflow
-   document and markers of your reviewer skill. Do not modify todo-app/. Do not read
-   todo-app/KNOWN_BUGS.md. Prove or disprove the finding by tracing the code and by
-   running code in a throwaway copy of the backend in the system temp directory (never
-   in the repo; see the pytest rule above). Fill in `Root cause`, set `severity`
-   (Critical/High/Medium/Low: data loss, security and broken core flows first) and
-   `complexity` (Easy/Medium/Hard), and set `status` to `confirmed` or `rejected` with
-   the reason. End with `VERIFY_COMPLETE <BUG-id> <confirmed|rejected>`.
-   ```
-2. Rank the confirmed issues:
+1. Read the reports yourself (you may read `bug-reports/`) and rank the issues:
    1. **Dependencies**: a broken test fixture goes first of all, because it makes every
       later proof unreliable. A bug that hides others goes before them.
    2. **Severity**: data loss, security, crashes and broken core flows before cosmetic.
    3. **Blast radius**, then **effort** (cheaper first on a tie).
-3. Write `bug-reports/INDEX.md` (table: priority, ID, title, kind, severity,
-   complexity, files, status; a short rationale per issue; a "Not pursued" table) and
-   set `priority: n` in every confirmed report. Apply the 12-bug limit.
-4. Show the table in chat and **continue automatically**.
+2. Write `bug-reports/INDEX.md` (table: priority, ID, title, kind, severity,
+   complexity, files, status; a short rationale per issue; a "Not attempted" table) and
+   set `priority: n` in every report. Apply the 12-bug limit.
+3. Show the table in chat and **continue automatically**.
 
 ---
 
@@ -232,8 +246,10 @@ from your architect skill; this message overrides them. Mindset:
 .bob/skills/architect/SKILL.md. Do not modify anything in todo-app/. Do not read
 todo-app/KNOWN_BUGS.md.
 
-Read bug-reports/INDEX.md and every confirmed report. Write bug-reports/FIX-PLAN.md and
-fill each report's "Fix plan" and "Regression test" sections. For each bug, in priority
+Read bug-reports/INDEX.md and every report in bug-reports/issues/. Write
+bug-reports/FIX-PLAN.md and fill each report's "Root cause", "Fix plan" and
+"Regression test" sections (take a quick look at the code for the root cause; keep it
+short). Set `status: planned`. For each bug, in priority
 order, give: exact file and function, the minimal change, the regression test (file,
 name, what it asserts, why it fails before the fix) and the commands that prove it.
 Flag bugs that touch the same lines and state the order.
@@ -333,11 +349,12 @@ and markers of your reviewer skill. Do not modify todo-app/; write only
 bug-reports/FINAL-PROOF.md. Do not read todo-app/KNOWN_BUGS.md.
 Run: backend pytest twice (repo state is fine now only if the isolation bug is fixed;
 otherwise use a throwaway copy), `npm run lint`, `npm run build`. Then run a BROWSER
-walkthrough of every flow in bug-reports/expected-behaviour.md against the real app
-(see "How to start the app for a browser check"), including: add seven items, add a
-50-character title, edit a title, edit a completed item (stays completed), complete and
-un-complete, delete, order after reload, and the "X / Y completed" counter. Report each
-flow as PASS or FAIL with what you saw. End with `FINAL_PROOF <PASS|FAIL> <n failing>`.
+walkthrough of the UI flows in bug-reports/expected-behaviour.md against the real app
+(see "How to start the app for a browser check"). Use only what the docs promise: empty
+list message, add (input clears, empty input cannot be submitted), several items listed
+newest first, complete and un-complete, edit title (Enter/blur saves, Escape cancels),
+delete, and everything still there after a reload. Report each flow as PASS or FAIL
+with what you saw. End with `FINAL_PROOF <PASS|FAIL> <n failing>`.
 ```
 
 Then decide:
@@ -361,7 +378,7 @@ Update `bug-reports/INDEX.md` with final statuses, then reply:
 
 ```
 Bug Hunter run <complete | incomplete> — branch <work-branch>
-Found: N (business X, technical Y) · Confirmed: C · Rejected: R
+Found: N (business X, technical Y)
 Fixed and proven: F · Blocked: B · Not attempted: A · Subtasks used: S/60
 
 | Priority | ID | Title | Severity | Status | Rounds | Proof | Commit |
@@ -378,8 +395,8 @@ Next step: review the branch and open a PR. <If incomplete: Run Bug Hunter one m
 
 ## Design rules
 
-- **Evidence over suspicion**: only confirmed issues are fixed; rejected ones stay in
-  the record with the reason.
+- **Clear and shallow**: only obvious problems (docs vs app, failing tests, lint/build
+  errors, crashes) are reported. No deep analysis, no suspicions.
 - **No fix without proof**: `fixed` requires an independent `PROOF PASS`, in a real
   browser wherever the bug is visible in the UI.
 - **The loop is bounded**: 3 rounds per bug, one extra pass at the end, 12 bugs and 60
