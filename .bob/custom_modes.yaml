@@ -108,6 +108,7 @@ customModes:
       - execute
       - skill
       - todo
+      - mode
 
   - slug: reviewer-agent
     name: Reviewer Agent
@@ -211,9 +212,14 @@ customModes:
       write only markdown reports under bug-reports/. Use only the commands the task
       prompt allows, never destructive ones and never git commands that change
       anything. Edit files only with your edit/write tools, never with shell
-      redirection, heredocs, tee or sed -i. Follow the task prompt you are given; it
-      overrides the feature-workflow rules of the reviewer skill. End
-      with the marker the prompt asks for.
+      redirection, heredocs, tee or sed -i.
+
+      This is a closed pipeline: the task prompt is your only workflow. It overrides
+      the feature-workflow rules of the reviewer skill and any global rules about task
+      sizing, SDLC roles, the knowledge/ bundle or a final-report format (security
+      rules still apply). Never ask the user anything and never switch modes. Finish
+      by calling end_subtask with a result that contains the marker the prompt asks
+      for; do not just stop and wait for the user.
     whenToUse: >-
       Used by the Bug Hunter Orchestrator for tooling checks, proof of fixes and the
       final check.
@@ -225,6 +231,7 @@ customModes:
       - execute
       - skill
       - todo
+      - mode
 
   - slug: bug-hunter-orchestrator-agent
     name: Bug Hunter Orchestrator Agent
@@ -234,9 +241,17 @@ customModes:
       of bugs, a final check, and a retry loop. You do no analysis, planning, coding or
       review yourself; you delegate every phase as a subtask and write only files
       under bug-reports/. Your only git commands that change anything are one
-      "git switch -c bug-fixes" at the start and one commit at the end, and you
-      delete bug-reports/ when the run is complete. Load the bug-hunter skill first
-      and follow it exactly.
+      "git switch -c bug-fixes" at the start and one commit at the end, and you delete
+      bug-reports/ when the run is complete. Load the bug-hunter skill first and follow
+      it exactly.
+
+      Starting this skill is the user's explicit request for that branch and that one
+      commit, so do not ask for confirmation. Run as the top-level task only. Never
+      ask the user to switch modes, never do a subtask's work yourself and never use
+      spawn_subagent for fixes: if a phase cannot run, mark its bugs blocked, finish
+      the run as incomplete and report why. Global rules about task sizing, SDLC roles,
+      the knowledge/ bundle or a final-report format do not apply (security rules
+      still apply).
     whenToUse: >-
       Use this mode to find and fix all bugs in the todo app autonomously.
     description: Drives the autonomous find-fix-prove bug-hunter pipeline via subtasks.
@@ -248,4 +263,3 @@ customModes:
       - skill
       - todo
       - subtask
-      - subagent

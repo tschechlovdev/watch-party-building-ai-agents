@@ -31,6 +31,7 @@ The skills already have narrow enough descriptions to avoid accidental auto-trig
 ## Bug Hunter skill
 
 Mode **Bug Hunter Orchestrator Agent** (`bug-hunter-orchestrator-agent`) runs the skill
-`bug-hunter`. It delegates to `engineer-agent` and `bug-hunter-reviewer-agent` only.
-Run it on a clean tree. It creates the branch `bug-fixes`, makes one commit at the end
+`bug-hunter`. It delegates to `engineer-agent` and `bug-hunter-reviewer-agent`
+only, as subtasks that close themselves with `end_subtask`. Start it as a new top-level
+chat on a clean tree. It creates the branch `bug-fixes`, makes one commit at the end
 (without `bug-reports/`) and deletes `bug-reports/` when the run is complete.
