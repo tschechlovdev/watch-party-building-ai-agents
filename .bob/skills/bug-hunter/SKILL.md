@@ -166,32 +166,28 @@ below overrides that explicitly. The message you send is the only workflow.
 
 ```
 Bug Hunter run, find phase. Write only under bug-reports/. Do not edit todo-app/. Do not
-read todo-app/KNOWN_BUGS.md. Keep it shallow.
+read todo-app/KNOWN_BUGS.md. Keep it shallow and use targeted line-range reads (do not read
+entire files top-to-bottom).
 Allowed commands: read-only commands, `npm run lint` and `npm run build` in
 todo-app/frontend. DO NOT RUN PYTEST (the tests might not be isolated from the real
 database). Never run rm, git changes, servers or network commands. Edit files only with
 your edit/write tools, never with cat >, heredocs, tee or sed -i.
 
 This is analysis only: you must not edit any file in todo-app/.
-Check the todo app against the checklist and nothing else. The checklist is the table
-(rows C1 to C13) in .bob/skills/bug-hunter/SKILL.md, section "The checklist"; read only
-that section and the "Criticality rubric" below it, not the rest of the file. The source
-of truth is todo-app-plan.md. For each check, read the code it names and decide PASS or
-FAIL yourself, with evidence. Do not fail a check without a concrete file:line cause.
+Check the todo app against the checklist (rows C1 to C13) in .bob/skills/bug-hunter/SKILL.md.
+Read only that section and the "Criticality rubric". Source of truth is todo-app-plan.md.
+For each check, use targeted read_file ranges on the named functions and decide PASS or FAIL
+with concrete file:line evidence.
 
 Also run `npm run lint` and `npm run build` in todo-app/frontend; an error is a failure.
 
 Write every result to bug-reports/checklist.md (ID, PASS/FAIL, one line of evidence with
 file:line; for lint/build the command and the first error).
 For every FAIL write ONE file bug-reports/issues/BUG-<NNN>-<slug>.md (NNN zero-padded,
-from 001) using the issue template below: `kind: business` or `technical`, `check: C<n>`
-(or `lint` / `build`), the symptom in plain words, the code location (file:line), and
-`criticality` and `complexity` taken from the rubric in the SKILL.md section
-"Criticality rubric" (Critical | High | Medium | Low, Easy | Medium | Hard).
+from 001) using the issue template in .bob/skills/bug-hunter/SKILL.md: `kind: business` or
+`technical`, `check: C<n>`, symptom, code location (file:line), and `criticality` and `complexity`.
 Report NOTHING that is not a failing check.
 Result text: the list of created files and the line `FIND_COMPLETE`.
-
-<issue template>
 
 <closing rule with marker FIND_COMPLETE>
 ```
@@ -231,13 +227,16 @@ commit). Do not invent issues.
 
 No verification step: every report is a failed check and is taken as real.
 
-1. Read the reports. Group them into **batches by file**, in this order:
+1. Read the reports. Group them into **logical batches**, in this order:
    1. **Tests batch** (check C11, if it failed): first, because non-isolated tests make
       every later test run unsafe.
-   2. **Backend batch**: all failing checks in `todo-app/backend/` source files.
-   3. **Frontend batch**: all failing checks in `todo-app/frontend/`, including lint and
-      build errors.
-   Bugs in the same file always go in the same batch, so they cannot conflict.
+   2. **Backend CRUD batch**: failing checks in `todo-app/backend/routes.py` covering core
+      business operations (C1 to C6: create, update fields, list ordering).
+   3. **Backend Validation batch**: failing checks in `todo-app/backend/routes.py` covering
+      input validation, error responses, and 400/404 handling (C7, C13). Separating
+      validation prevents minor edge cases from causing full CRUD re-proof cycles.
+   4. **Frontend batch**: all failing checks in `todo-app/frontend/` (C8 to C10), including
+      lint and build errors.
 2. Prioritise every bug yourself, from the reports only (never from KNOWN_BUGS.md):
    1. the tests batch first, if C11 failed;
    2. then by **criticality** (Critical > High > Medium > Low), as set by the rubric;
@@ -311,12 +310,10 @@ bug-reports/checklist.md or its report is fixed, or this is the tests batch afte
 fix; never if C11 is blocked), `npm run lint`, `npm run build`. Nothing else. Run each
 command once.
 
-1. Run `git diff -- <the files of this batch>` (earlier batches are not committed yet, so
-   a plain `git diff` also shows their changes; ignore those). The changes must be
+1. Run `git diff -- <the files of this batch>`. Inspect the diff and use targeted line-range
+   reads on changed functions; do NOT re-read entire unmodified files. Changes must be
    minimal and touch only what this batch needs.
-2. For each bug in the batch, its check row now passes when you read the code:
-   (the rows of this batch's checks in .bob/skills/bug-hunter/SKILL.md, section "The
-   checklist")
+2. For each bug in the batch, verify its check row in .bob/skills/bug-hunter/SKILL.md now passes.
 3. Backend: each new regression test exists and `cd todo-app/backend && uv run pytest`
    is fully green. **Exception, tests batch:** other bugs are not fixed yet, so some
    tests may still fail for unrelated reasons. For this batch only, PASS means the
@@ -355,10 +352,8 @@ Bug Hunter run, final check. Do not edit todo-app/; write only bug-reports/FINAL
 Do not read todo-app/KNOWN_BUGS.md. Allowed commands: read-only commands,
 `uv run pytest`, `npm run lint`, `npm run build`. Nothing else. Run each command once.
 
-Re-check every row of this checklist against the current code and give PASS or FAIL with
-one line of evidence (file:line):
-(the whole table in .bob/skills/bug-hunter/SKILL.md, section "The checklist"; read only
-that section)
+Re-check every row C1 to C13 in .bob/skills/bug-hunter/SKILL.md against the current code using
+targeted line-range reads and give PASS or FAIL with one line of evidence (file:line).
 Then run `cd todo-app/backend && uv run pytest` (skip it if C11 is blocked or still
 FAIL: say so instead), `npm run lint` and `npm run build`.
 Report only failing checks and failing commands; add nothing else.

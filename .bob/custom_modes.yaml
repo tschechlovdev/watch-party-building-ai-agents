@@ -38,6 +38,7 @@ customModes:
         - fileRegex: "feature-workflows/.*\\.md$|feature-requests/.*\\.md$|bug-reports/.*\\.md$"
       - skill
       - todo
+      - subtask
 
   - slug: architect-agent
     name: Architect Agent
@@ -69,6 +70,7 @@ customModes:
         - fileRegex: "feature-workflows/.*\\.md$|bug-reports/.*\\.md$"
       - skill
       - todo
+      - subtask
 
   - slug: engineer-agent
     name: Engineer Agent
@@ -109,6 +111,7 @@ customModes:
       - skill
       - todo
       - mode
+      - subtask
 
   - slug: reviewer-agent
     name: Reviewer Agent
@@ -143,6 +146,7 @@ customModes:
         - fileRegex: "feature-workflows/.*\\.md$"
       - skill
       - todo
+      - subtask
 
   - slug: orchestrator-agent
     name: SDLC Orchestrator Agent
@@ -232,6 +236,7 @@ customModes:
       - skill
       - todo
       - mode
+      - subtask
 
   - slug: bug-hunter-orchestrator-agent
     name: Bug Hunter Orchestrator Agent
