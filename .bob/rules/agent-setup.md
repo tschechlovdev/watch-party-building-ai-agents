@@ -28,10 +28,17 @@ The SDLC agent skills must NOT have `metadata: disable-model-invocation: true` i
 frontmatter — that flag prevents Bob from indexing them in the `use_skill` lookup table.
 The skills already have narrow enough descriptions to avoid accidental auto-triggering.
 
-## Bug Hunter skill
+## Bug Hunter skills
 
-Mode **Bug Hunter Orchestrator Agent** (`bug-hunter-orchestrator-agent`) runs the skill
-`bug-hunter`. It delegates to `engineer-agent` and `bug-hunter-reviewer-agent`
-only, as subtasks that close themselves with `end_subtask`. Start it as a new top-level
-chat on a clean tree. It creates the branch `bug-fixes`, makes one commit at the end
-(without `bug-reports/`) and deletes `bug-reports/` when the run is complete.
+There is one mode for all bug work: **Bug Hunter Orchestrator Agent**
+(`bug-hunter-orchestrator-agent`). It picks the skill from your request:
+
+| Say | Skill | What happens |
+|---|---|---|
+| "find bugs" | `bug-finder` | Checks the app against the checklist and files one GitHub issue per failing check (label `bug-hunter`). Changes no code. |
+| "fix bugs" | `bug-fixer` | Fixes the open `bug-hunter` issues with proof, pushes branch `bug-fixes` and opens a PR. Never merges. |
+| "find and fix everything" | `bug-hunter` | Find and fix in one run, no GitHub. |
+
+It delegates to `engineer-agent` and `bug-hunter-reviewer-agent` only, as subtasks that
+close themselves with `end_subtask`. Start it as a new top-level chat on a clean tree.
+`bug-finder` and `bug-fixer` reuse the checklist and message templates of `bug-hunter`.
