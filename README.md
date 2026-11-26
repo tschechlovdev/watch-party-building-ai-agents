@@ -102,6 +102,13 @@ Code Review (Read-only check against Acceptance Criteria)
    cd watch-party-building-ai-agents
    ```
 
+   > ⚠️ **Don't use "Download ZIP".** The `.bob/` folder (agent modes and skills) is
+   > listed in `.gitignore`. If you unpack a ZIP and run `git init` + `git add .`,
+   > those files are silently left out, and the agents and the Bug Factory workflows
+   > won't work. Always `git clone` (or use the template, see [Step 7](docs/INSTRUCTIONS.md#step-7--bug-factory-bob-in-github-actions)). If you have
+   > to start from a ZIP, add the files explicitly:
+   > `git add -f .bob/custom_modes.yaml .bob/skills .bob/rules`.
+
 2. **Verify backend tests pass:**
    ```bash
    cd todo-app/backend
@@ -246,6 +253,10 @@ cd my-bug-factory
 ./scripts/setup-bug-factory.sh --demo-issue
 ```
 
+> ⚠️ Use the template or `git clone`. **"Download ZIP" + `git init` breaks the
+> Bug Factory**: `.bob/` is gitignored, so the agent modes and skills never reach
+> your repo, and every Bob run fails.
+
 Cost controls: `gh variable set BOB_ENABLED --body false` stops all Bob runs, and
 `BOB_MAX_COST` caps each single Bob call (default 3 Bobcoins).
 
@@ -285,3 +296,9 @@ Open each folder in a separate Bob window (**File → Open Folder**). Run an Orc
 * Core agent specifications: [`sdlc_agents_spec.md`](sdlc_agents_spec.md)
 * Orchestrator specification: [`orchestrator_agent_spec.md`](orchestrator_agent_spec.md)
 * Extensions & ideas for going further: [`docs/EXTENSIONS.md`](docs/EXTENSIONS.md)
+
+---
+
+## License
+
+[MIT](LICENSE). Free to use, copy and adapt for workshops and teaching.
