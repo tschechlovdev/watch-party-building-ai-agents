@@ -204,6 +204,21 @@ This creates a new repository under your account, with Issues and Actions turned
 on and the intentional demo bug included. **Use the template, not a fork:** forks
 start with Issues and Actions turned off.
 
+**Alternative: clone and push to a new repo.** This gives the same result without
+the template:
+
+```bash
+git clone https://github.com/tschechlovdev/watch-party-building-ai-agents.git my-bug-factory
+cd my-bug-factory
+git remote rename origin upstream
+gh repo create my-bug-factory --public --source . --remote origin --push
+```
+
+> ⚠️ Don't download the ZIP and run `git init` + `git add .`. The `.gitignore`
+> excludes `.bob/`, so the agent modes and skills would silently be left out, and
+> every Bob run in GitHub Actions would fail. If you really start from a ZIP, add
+> them with `git add -f .bob/custom_modes.yaml .bob/skills .bob/rules`.
+
 ### 7.3 Run the setup script
 
 ```bash
