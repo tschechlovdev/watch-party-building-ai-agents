@@ -233,13 +233,21 @@ Pull request "fix: … (#n)" with Fixes #n and the full triage/review trace
 | `.bob/skills/bug-triage/SKILL.md` | Triage agent instructions (mode `bug-triage-agent`) |
 | `templates/bugfix-workflow.md` | Template for `bug-workflows/issue-<n>-workflow.md` |
 
-**Setup**
-1. Create a Bob API key with the **Inference** scope in the Bob web portal, then
-   store it as an Actions secret: `gh secret set BOB_API_KEY`. If the key is of type
-   *general*, also set `gh secret set BOB_TEAM_ID`.
-2. Optional: set a cost cap per Bob run with `gh variable set BOB_MAX_COST --body 3`.
-3. Under Settings → Actions → General, allow GitHub Actions to create pull requests.
-4. The workflows run from the default branch, so merge them to `main` first.
+**Setup (workshop participants: use your own copy and your own key)**
+
+Every Bob run uses the Bobcoins of the key stored in the repository. So each
+participant creates their own repo from this template and runs the setup script.
+The step-by-step guide, with prerequisites (Bob API key, `gh` login), is in
+[docs/INSTRUCTIONS.md → Step 7](docs/INSTRUCTIONS.md#step-7--bug-factory-bob-in-github-actions).
+
+```bash
+gh repo create my-bug-factory --public --clone --template tschechlovdev/watch-party-building-ai-agents
+cd my-bug-factory
+./scripts/setup-bug-factory.sh --demo-issue
+```
+
+Cost controls: `gh variable set BOB_ENABLED --body false` stops all Bob runs, and
+`BOB_MAX_COST` caps each single Bob call (default 3 Bobcoins).
 
 **Safety rails**
 - Issue text is untrusted. It reaches Bob only through a file, quoted and marked as

@@ -34,10 +34,13 @@ jobs:
   fix:
     # inputs.issue-number is set for workflow_call and workflow_dispatch.
     # (In a called workflow, github.event is the caller's event, so test inputs first.)
+    # Kill switch: set the repo variable BOB_ENABLED=false to stop all Bob runs.
     if: >-
-      inputs.issue-number || (
-        github.event.label.name == 'bob-fix' &&
-        github.event.issue.pull_request == null
+      vars.BOB_ENABLED != 'false' && (
+        inputs.issue-number || (
+          github.event.label.name == 'bob-fix' &&
+          github.event.issue.pull_request == null
+        )
       )
     runs-on: ubuntu-latest
     timeout-minutes: 45
