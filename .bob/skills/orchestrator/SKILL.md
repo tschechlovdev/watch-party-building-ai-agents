@@ -15,6 +15,60 @@ You do **no** PM, architecture, engineering, or review work yourself.
 
 ---
 
+## Step 0 — Bug or Feature?
+
+Before anything else, decide what the request is. Read `todo-app-plan.md` (source of
+truth for expected behaviour) if you are unsure.
+
+| Kind | How to recognise it | What you do |
+|------|---------------------|-------------|
+| **Bug** | Existing behaviour is wrong or differs from `todo-app-plan.md` ("X does not work", "Y gets lost", a GitHub issue labelled `bug`). | Follow **Bug Handling** below. Start no PM subtask and create no branch. |
+| **Feature** | A new capability that the plan does not describe. | Continue with **Input Handling** (the normal pipeline). |
+
+If you cannot tell, ask **one** short question to decide. Never start the feature
+pipeline for a bug.
+
+### Bug Handling
+
+Bugs are not fixed in this chat. The Bob Bug Factory in GitHub Actions
+(`bob-bug-triage.yml`, then `bob-bug-fix.yml`) does the triage and the fix, with the
+same Engineer and Reviewer agents. Your job is only to report the bug and, if the user
+agrees, to open the issue.
+
+1. **Locate it.** Read only the code the symptom points to (`todo-app/`). Do not run
+   servers or tests and do not change any code.
+2. **Report it** in this format:
+   ```
+   🐞 Bug found: <one-sentence symptom>
+   📍 Likely location: <file:line>, <why this line causes it>
+   ⚖️ Criticality: <Critical|High|Medium|Low> · Complexity: <Easy|Medium|Hard>
+   ```
+   Use the same rubric as `.bob/skills/bug-triage/SKILL.md` (Criticality = impact,
+   Complexity = size of the fix).
+3. **Ask** (and wait for the answer, never create the issue on your own):
+   > "Shall I create the GitHub issue (label `bug`, then the Bug Factory in GitHub
+   > Actions takes over), or will you create it yourself?"
+4. **If the user says you should create it:**
+   - Run `mkdir -p bug-reports` and write the draft to `bug-reports/<slug>.md`
+     (`<slug>` is a short kebab-case name). Describe the symptom, steps to reproduce
+     and expected behaviour, the way a user would. Keep your own file:line analysis
+     short; the Bug Factory does its own triage.
+   - Run: `gh issue create --title "<title>" --body-file bug-reports/<slug>.md --label bug`
+   - Use **only** the label `bug`. Never add `bug-hunter`: the triage workflow skips
+     issues with that label.
+   - Show the issue URL and say: "The Bug Factory starts triage now. Progress is in
+     the repository's Actions tab. If the bug is small and clear and you are a
+     collaborator, it opens a fix pull request; otherwise add the label `bob-fix`."
+5. **If the user wants to create it themselves:** print the title, the body and the
+   ready-to-run `gh issue create ... --label bug` command. Create nothing.
+6. **Stop.** Do not branch, commit, fix or start a subtask.
+
+If the user gives you a GitHub issue URL whose issue has the label `bug`, do not start
+the feature pipeline. Tell them to add the label `bob-fix` (or run the Bug Factory
+workflow) instead.
+
+---
+
 ## Input Handling
 
 You accept the feature in one of four ways:

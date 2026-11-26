@@ -28,17 +28,11 @@ The SDLC agent skills must NOT have `metadata: disable-model-invocation: true` i
 frontmatter — that flag prevents Bob from indexing them in the `use_skill` lookup table.
 The skills already have narrow enough descriptions to avoid accidental auto-triggering.
 
-## Bug Hunter skills
+## Bugs
 
-There is one mode for all bug work: **Bug Hunter Orchestrator Agent**
-(`bug-hunter-orchestrator-agent`). It picks the skill from your request:
-
-| Say | Skill | What happens |
-|---|---|---|
-| "find bugs" | `bug-finder` | Checks the app against the checklist and files one GitHub issue per failing check (label `bug-hunter`). Changes no code. |
-| "fix bugs" | `bug-fixer` | Fixes the open `bug-hunter` issues with proof, pushes branch `bug-fixes` and opens a PR. Never merges. |
-| "find and fix everything" | `bug-hunter` | Find and fix in one run, no GitHub. |
-
-It delegates to `engineer-agent` and `bug-hunter-reviewer-agent` only, as subtasks that
-close themselves with `end_subtask`. Start it as a new top-level chat on a clean tree.
-`bug-finder` and `bug-fixer` reuse the checklist and message templates of `bug-hunter`.
+The **SDLC Orchestrator Agent** first decides whether a request is a bug or a feature
+(skill `orchestrator`, Step 0). Features run the PM -> Architect -> Engineer -> Reviewer
+pipeline. For a bug it fixes nothing: it reports the likely `file:line`, asks whether it
+should create the GitHub issue (label `bug`) or whether you will, and stops. The fix is
+done by the Bob Bug Factory in GitHub Actions (`bob-bug-triage.yml`, `bob-bug-fix.yml`),
+which uses the same Engineer and Reviewer agents.

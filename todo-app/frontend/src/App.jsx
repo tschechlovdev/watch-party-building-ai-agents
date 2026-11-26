@@ -16,7 +16,7 @@ export default function App() {
   async function handleAdd(title) {
     try {
       const created = await createTodo(title)
-      setTodos((prev) => [...prev, created])
+      setTodos((prev) => [created, ...prev])
     } catch {
       setError('Failed to add todo.')
     }
@@ -34,13 +34,7 @@ export default function App() {
   async function handleDelete(id) {
     try {
       await deleteTodo(id)
-      setTodos((prev) => {
-        const index = prev.findIndex((t) => t.id === id)
-        if (index !== -1) {
-          prev.splice(index, 1)
-        }
-        return prev
-      })
+      setTodos((prev) => prev.filter((t) => t.id !== id))
     } catch {
       setError('Failed to delete todo.')
     }
@@ -80,7 +74,7 @@ export default function App() {
 
         {todos.length > 0 && (
           <p className="mt-4 text-center text-xs text-gray-400">
-            {todos.filter((t) => t.completed).length + 1} / {todos.length} completed
+            {todos.filter((t) => t.completed).length} / {todos.length} completed
           </p>
         )}
       </div>

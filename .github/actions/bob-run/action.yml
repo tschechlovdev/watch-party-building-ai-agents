@@ -1,0 +1,137 @@
+name: Run Bob
+description: >-
+  Install Bob Shell (once per job) and run one headless Bob task in a given mode.
+  Fails if the run does not end with the expected completion marker.
+
+inputs:
+  mode:
+    description: Bob mode slug from .bob/custom_modes.yaml (e.g. bug-triage-agent)
+    required: true
+  prompt:
+    description: Prompt text. Must not contain untrusted input (pass file paths instead).
+    required: true
+  marker:
+    description: Completion marker the final message must contain (e.g. TRIAGE_COMPLETE)
+    required: true
+  name:
+    description: Short name for the log artifact (e.g. triage, engineer-1)
+    required: true
+  api-key:
+    description: Bob API key (Inference scope)
+    required: true
+  team-id:
+    description: Bob team id (only needed for API keys of type "general")
+    required: false
+    default: ""
+  max-cost:
+    description: Spending cap in Bobcoins for this single run
+    required: false
+    default: "3"
+  max-turns:
+    description: Cap on agentic turns for this single run
+    required: false
+    default: "80"
+
+outputs:
+  last-message:
+    description: Path to a file with Bob's final message
+    value: ${{ steps.run.outputs.last-message }}
+  cost:
+    description: Cost reported by Bob for this run
+    value: ${{ steps.run.outputs.cost }}
+
+runs:
+  using: composite
+  steps:
+    - name: Check Bob API key
+      shell: bash
+      env:
+        BOB_API_KEY: ${{ inputs.api-key }}
+      run: |
+        if [ -z "$BOB_API_KEY" ]; then
+          echo "::error::The repository secret BOB_API_KEY is not set. Run: gh secret set BOB_API_KEY (see docs/INSTRUCTIONS.md, Bug Factory)."
+          exit 1
+        fi
+
+    - name: Install Bob Shell
+      shell: bash
+      run: |
+        if ! command -v bob >/dev/null 2>&1; then
+          npm install --registry=https://registry.npmjs.org/ \
+            --allow-scripts=@officecli/officecli -g @ibm/bob
+        fi
+        bob --version
+
+    - name: Bob (${{ inputs.mode }})
+      id: run
+      shell: bash
+      env:
+        # Only the Bob key is visible here: no GitHub token, so Bob cannot push,
+        # comment or open PRs itself. The workflow does that after its own checks.
+        BOB_API_KEY: ${{ inputs.api-key }}
+        BOB_TEAM_ID: ${{ inputs.team-id }}
+        BOB_MODE: ${{ inputs.mode }}
+        BOB_PROMPT: ${{ inputs.prompt }}
+        BOB_MARKER: ${{ inputs.marker }}
+        BOB_NAME: ${{ inputs.name }}
+        MAX_COST: ${{ inputs.max-cost }}
+        MAX_TURNS: ${{ inputs.max-turns }}
+      run: |
+        set +e -uo pipefail  # capture the exit code ourselves
+        out_dir="$RUNNER_TEMP/bob/$BOB_NAME"
+        mkdir -p "$out_dir"
+        printf '%s\n' "$BOB_PROMPT" > "$out_dir/prompt.md"
+
+        team_args=()
+        [ -n "$BOB_TEAM_ID" ] && team_args=(--team-id "$BOB_TEAM_ID")
+
+        bob run \
+          --accept-license \
+          --trust \
+          --workspace "$GITHUB_WORKSPACE" \
+          --mode "$BOB_MODE" \
+          --format json \
+          --max-cost "$MAX_COST" \
+          --max-turns "$MAX_TURNS" \
+          --disable-mcp \
+          --disable-subagents \
+          "${team_args[@]}" \
+          < "$out_dir/prompt.md" > "$out_dir/result.json" 2> "$out_dir/stderr.log"
+        rc=$?
+
+        if jq -e . "$out_dir/result.json" >/dev/null 2>&1; then
+          jq -r '.last_message // ""' "$out_dir/result.json" > "$out_dir/last_message.md"
+          cost=$(jq -r '.stats.session_costs // .stats.cost // "n/a"' "$out_dir/result.json")
+          status=$(jq -r '.status // "n/a"' "$out_dir/result.json")
+        else
+          cp "$out_dir/result.json" "$out_dir/last_message.md"
+          cost="n/a"; status="non-json output"
+        fi
+        echo "last-message=$out_dir/last_message.md" >> "$GITHUB_OUTPUT"
+        echo "cost=$cost" >> "$GITHUB_OUTPUT"
+
+        {
+          echo "### Bob \`$BOB_MODE\` ($BOB_NAME)"
+          echo "exit code: $rc · status: $status · cost: $cost"
+          echo
+          echo '<details><summary>Final message</summary>'
+          echo
+          cat "$out_dir/last_message.md"
+          echo
+          echo '</details>'
+        } >> "$GITHUB_STEP_SUMMARY"
+
+        if [ "$rc" -ne 0 ]; then
+          echo "::error::Bob exited with code $rc"; tail -50 "$out_dir/stderr.log"; exit 1
+        fi
+        if ! grep -q "$BOB_MARKER" "$out_dir/last_message.md"; then
+          echo "::error::Bob run '$BOB_NAME' ended without marker $BOB_MARKER"; exit 1
+        fi
+
+    - name: Upload Bob log
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: bob-log-${{ inputs.name }}
+        path: ${{ runner.temp }}/bob/${{ inputs.name }}
+        if-no-files-found: ignore

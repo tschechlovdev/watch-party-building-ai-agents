@@ -201,6 +201,70 @@ To connect the agent workflow directly to GitHub:
 
 ---
 
+## Bug Factory: Triage + Auto-Fix in GitHub Actions
+
+The same SDLC team also fixes bugs, with no IDE involved. Bob Shell runs headless
+in GitHub Actions, and **the workflow is the orchestrator**. Each phase is one
+`bob run --mode <agent>` call, and the workflow checks its completion marker. The
+bug workflow document `bug-workflows/issue-<n>-workflow.md` is the shared memory,
+just like the feature workflow.
+
+```text
+Person opens an issue with label `bug` (often a vague one-liner)
+    ↓
+bob-bug-triage.yml → bug-triage-agent            (TRIAGE_COMPLETE)
+    ↓  comment: symptom, file:line evidence, root cause, fix options, regression test
+    ↓  labels: bob-triaged, criticality:*, bob-autofix-candidate | needs-info
+Gate: small and clear (high confidence, Easy, ≤2 files) AND reporter is a collaborator?
+    ├─ yes → starts the fix automatically
+    └─ no  → a maintainer adds the `bob-fix` label (also works on Bug Finder issues)
+    ↓
+bob-bug-fix.yml → engineer-agent → reviewer-agent (max 2 cycles)
+    ↓  independent CI gate: pytest + lint + build (Bob's own test run is not trusted)
+Pull request "fix: … (#n)" with Fixes #n and the full triage/review trace
+```
+
+| File | Purpose |
+|---|---|
+| `.github/workflows/bob-bug-triage.yml` | Triage on `bug` label, posts the analysis, auto-starts small fixes |
+| `.github/workflows/bob-bug-fix.yml` | Engineer → Reviewer loop, CI gate, PR (label `bob-fix`, or run manually) |
+| `.github/actions/bob-run/action.yml` | Installs Bob Shell and runs one mode headless, checks the marker |
+| `.github/scripts/bug_workflow.py` | Builds and parses the bug workflow document, comment and PR body |
+| `.bob/skills/bug-triage/SKILL.md` | Triage agent instructions (mode `bug-triage-agent`) |
+| `templates/bugfix-workflow.md` | Template for `bug-workflows/issue-<n>-workflow.md` |
+
+**Setup (workshop participants: use your own copy and your own key)**
+
+Every Bob run uses the Bobcoins of the key stored in the repository. So each
+participant creates their own repo from this template and runs the setup script.
+The step-by-step guide, with prerequisites (Bob API key, `gh` login), is in
+[docs/INSTRUCTIONS.md → Step 7](docs/INSTRUCTIONS.md#step-7--bug-factory-bob-in-github-actions).
+
+```bash
+gh repo create my-bug-factory --public --clone --template tschechlovdev/watch-party-building-ai-agents
+cd my-bug-factory
+./scripts/setup-bug-factory.sh --demo-issue
+```
+
+Cost controls: `gh variable set BOB_ENABLED --body false` stops all Bob runs, and
+`BOB_MAX_COST` caps each single Bob call (default 3 Bobcoins).
+
+**Safety rails**
+- Issue text is untrusted. It reaches Bob only through a file, quoted and marked as
+  data, never through `${{ }}` in a script.
+- The Bob steps get no GitHub token, and checkout keeps no git credentials. Only the
+  workflow comments, pushes and opens PRs, after its own checks.
+- Bob can only change files in `todo-app/` and `bug-workflows/`. Any other change
+  fails the run.
+- Auto-fix needs both a small, clear triage and a trusted reporter. Everything else
+  needs a maintainer label. PRs are never merged automatically.
+
+**Demo:** as a collaborator, open an issue titled `Can't un-check a todo anymore`
+with the `bug` label. Watch the triage comment arrive, then the PR. Or run either
+workflow by hand: `gh workflow run bob-bug-fix.yml -f issue-number=21`.
+
+---
+
 ## Bonus: Parallel Feature Swarms with Git Worktrees
 
 Want to run multiple AI feature pipelines simultaneously on the same codebase without collisions? Use **Git Worktrees**:
@@ -221,3 +285,9 @@ Open each folder in a separate Bob window (**File → Open Folder**). Run an Orc
 * Core agent specifications: [`sdlc_agents_spec.md`](sdlc_agents_spec.md)
 * Orchestrator specification: [`orchestrator_agent_spec.md`](orchestrator_agent_spec.md)
 * Extensions & ideas for going further: [`docs/EXTENSIONS.md`](docs/EXTENSIONS.md)
+
+---
+
+## License
+
+[MIT](LICENSE). Free to use, copy and adapt for workshops and teaching.

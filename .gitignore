@@ -30,17 +30,19 @@ logs/
 !.vscode/extensions.json
 .idea/
 
-# Bob — ignore everything except agent config
-.bob/
+# Bob — commit the agent config (modes, skills, rules), keep the rest local.
+# Note: ".bob/*" (not ".bob/") so the "!" exceptions below can take effect.
+# mcp.json stays ignored: it points to a local, machine-specific MCP server.
+.bob/*
 !.bob/custom_modes.yaml
-!.bob/mcp.json
 !.bob/skills/
-!.bob/skills/**
 !.bob/rules/
-!.bob/rules/**
 
 # Test cache
 .pytest_cache/
 
 # Bob task files
 bob-task*.json
+
+# Bug report drafts written by the Orchestrator (local only)
+bug-reports/

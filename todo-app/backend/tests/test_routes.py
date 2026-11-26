@@ -9,7 +9,7 @@ import models
 def client(tmp_path):
     """Create a test client with an isolated temporary database."""
     db_file = tmp_path / "test_todos.db"
-    models.DATABASE_PATH = str(db_file)
+    models.DB_PATH = str(db_file)
     models.init_db()
 
     app.config["TESTING"] = True
