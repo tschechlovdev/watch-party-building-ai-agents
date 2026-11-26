@@ -55,7 +55,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # The issue body goes through a file, never through ${{ }} in a script.
+          # The issue body goes through a file, never through an expression in a script.
           gh api "repos/${GITHUB_REPOSITORY}/issues/${ISSUE}" > "$RUNNER_TEMP/issue.json"
           echo "DOC=bug-workflows/issue-${ISSUE}-workflow.md" >> "$GITHUB_ENV"
           python3 .github/scripts/bug_workflow.py init "$RUNNER_TEMP/issue.json" "bug-workflows/issue-${ISSUE}-workflow.md"
