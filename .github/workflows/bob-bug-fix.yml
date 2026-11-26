@@ -140,6 +140,7 @@ jobs:
 
       # --- Cycle 1 ---
       - name: Bob engineer (pass 1)
+        id: eng1
         uses: ./.github/actions/bob-run
         with:
           name: engineer-1
@@ -149,6 +150,7 @@ jobs:
           team-id: ${{ secrets.BOB_TEAM_ID }}
           max-cost: ${{ vars.BOB_MAX_COST || '3' }}
           prompt: >-
+            To update the workflow document, read it fully and write the complete file back in one write (no partial inserts); keep every heading exactly once.
             Load the engineer skill and follow its "Bugfix Workflows" section. Fix
             the bug described in ${{ env.DOC }}: follow the Recommended Fix in its
             Triage section, add the regression test, run the tests, and fill in
@@ -157,6 +159,7 @@ jobs:
             IMPLEMENTATION_COMPLETE.
 
       - name: Bob reviewer (pass 1)
+        id: rev1
         uses: ./.github/actions/bob-run
         with:
           name: reviewer-1
@@ -166,6 +169,7 @@ jobs:
           team-id: ${{ secrets.BOB_TEAM_ID }}
           max-cost: ${{ vars.BOB_MAX_COST || '3' }}
           prompt: >-
+            To update the workflow document, read it fully and write the complete file back in one write (no partial inserts); keep every heading exactly once.
             Load the reviewer skill and follow its "Bugfix Workflows" section.
             Review the bugfix in ${{ env.DOC }} against the Acceptance Criteria in
             its Triage section and issue your verdict. You run headless: never ask
@@ -177,6 +181,7 @@ jobs:
 
       # --- Cycle 2 (only if the reviewer asked for changes) ---
       - name: Bob engineer (pass 2)
+        id: eng2
         if: steps.verdict1.outputs.role != 'done'
         uses: ./.github/actions/bob-run
         with:
@@ -187,12 +192,14 @@ jobs:
           team-id: ${{ secrets.BOB_TEAM_ID }}
           max-cost: ${{ vars.BOB_MAX_COST || '3' }}
           prompt: >-
+            To update the workflow document, read it fully and write the complete file back in one write (no partial inserts); keep every heading exactly once.
             The reviewer has requested changes. Load the engineer skill and
             address every issue in the Review Feedback section of ${{ env.DOC }}
             (second pass). Do not run git commands that change anything. You run
             headless: never ask the user anything. End with IMPLEMENTATION_COMPLETE.
 
       - name: Bob reviewer (pass 2)
+        id: rev2
         if: steps.verdict1.outputs.role != 'done'
         uses: ./.github/actions/bob-run
         with:
@@ -203,6 +210,7 @@ jobs:
           team-id: ${{ secrets.BOB_TEAM_ID }}
           max-cost: ${{ vars.BOB_MAX_COST || '3' }}
           prompt: >-
+            To update the workflow document, read it fully and write the complete file back in one write (no partial inserts); keep every heading exactly once.
             Load the reviewer skill and follow its "Bugfix Workflows" section.
             Review the updated bugfix in ${{ env.DOC }} and issue your verdict. You
             run headless: never ask the user anything. End with REVIEW_COMPLETE.
@@ -254,6 +262,9 @@ jobs:
       - name: Commit, push and open PR
         env:
           GH_TOKEN: ${{ github.token }}
+          # Bob's final messages are the reliable summary of each phase.
+          ENG_MSG: ${{ steps.eng2.outputs.last-message || steps.eng1.outputs.last-message }}
+          REV_MSG: ${{ steps.rev2.outputs.last-message || steps.rev1.outputs.last-message }}
         run: |
           title=$(python3 "$S" get "$DOC" title)
           git -c user.name="github-actions[bot]" \
@@ -261,7 +272,7 @@ jobs:
               commit -q -m "fix: ${title} (#${ISSUE})" -m "Automated bugfix by Bob (triage, engineer, reviewer)." -m "Fixes #${ISSUE}"
           git push -q "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:refs/heads/${BRANCH}"
 
-          python3 "$S" pr-body "$DOC" "$ISSUE" "$RUNNER_TEMP/gate.log" > "$RUNNER_TEMP/pr.md"
+          python3 "$S" pr-body "$DOC" "$ISSUE" "$RUNNER_TEMP/gate.log" "$ENG_MSG" "$REV_MSG" > "$RUNNER_TEMP/pr.md"
           url=$(gh pr create --base "$BASE" --head "$BRANCH" \
                   --title "fix: ${title} (#${ISSUE})" --body-file "$RUNNER_TEMP/pr.md")
           gh issue comment "$ISSUE" --body "✅ Bob opened a fix: ${url}"

@@ -152,7 +152,11 @@ workflow (for example by the Bob bug-fix GitHub Action):
    `todo-app/backend/tests/`. Frontend bug: there is no test framework, so run
    `cd todo-app/frontend && npm run lint && npm run build` instead, and paste the
    output under Test Run Result.
-6. Never run git commands that change anything (no commit, push, branch, reset).
-   The automation commits and opens the PR.
-7. Fill in Implementation Notes, set `current-role: reviewer`, and end with
+6. Never run git commands that change anything (no commit, push, branch, reset,
+   stash, checkout). The automation commits and opens the PR. To show that the
+   regression test fails without the fix, run it before you make the fix.
+7. Update the workflow document by reading it fully and writing the complete file
+   back in one write (no partial inserts). Keep every `##` heading exactly once,
+   and put your notes under the existing Implementation Notes headings.
+8. Fill in Implementation Notes, set `current-role: reviewer`, and end with
    `IMPLEMENTATION_COMPLETE`, exactly as for features.
