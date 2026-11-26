@@ -41,13 +41,6 @@ git clone https://github.com/tschechlovdev/watch-party-building-ai-agents.git
 cd watch-party-building-ai-agents
 ```
 
-> ⚠️ **Don't use "Download ZIP".** The `.bob/` folder (agent modes and skills) is
-> listed in `.gitignore`. If you unpack a ZIP and run `git init` + `git add .`,
-> those files are silently left out, and the agents and the Bug Factory workflows
-> won't work. Always `git clone` (or use the template, see Step 7). If you have
-> to start from a ZIP, add the files explicitly:
-> `git add -f .bob/custom_modes.yaml .bob/skills .bob/rules`.
-
 ### 2. In IBM Bob:
 * Open the **IBM Bob** desktop app (or Bob in VS Code).
 * Go to the top menu: **File → Open Folder...** (or press `Cmd+O` on macOS / `Ctrl+O` on Windows/Linux).
@@ -220,11 +213,6 @@ cd my-bug-factory
 git remote rename origin upstream
 gh repo create my-bug-factory --public --source . --remote origin --push
 ```
-
-> ⚠️ Don't download the ZIP and run `git init` + `git add .`. The `.gitignore`
-> excludes `.bob/`, so the agent modes and skills would silently be left out, and
-> every Bob run in GitHub Actions would fail. If you really start from a ZIP, add
-> them with `git add -f .bob/custom_modes.yaml .bob/skills .bob/rules`.
 
 ### 7.3 Run the setup script
 
