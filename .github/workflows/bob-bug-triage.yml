@@ -26,12 +26,15 @@ permissions:
 jobs:
   triage:
     # Skip Bug Finder issues (already well described), already triaged issues and PRs.
+    # Kill switch: set the repo variable BOB_ENABLED=false to stop all Bob runs.
     if: >-
-      github.event_name == 'workflow_dispatch' || (
-        github.event.label.name == 'bug' &&
-        github.event.issue.pull_request == null &&
-        !contains(github.event.issue.labels.*.name, 'bug-hunter') &&
-        !contains(github.event.issue.labels.*.name, 'bob-triaged')
+      vars.BOB_ENABLED != 'false' && (
+        github.event_name == 'workflow_dispatch' || (
+          github.event.label.name == 'bug' &&
+          github.event.issue.pull_request == null &&
+          !contains(github.event.issue.labels.*.name, 'bug-hunter') &&
+          !contains(github.event.issue.labels.*.name, 'bob-triaged')
+        )
       )
     runs-on: ubuntu-latest
     timeout-minutes: 20

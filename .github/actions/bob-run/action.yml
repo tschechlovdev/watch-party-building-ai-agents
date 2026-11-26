@@ -43,6 +43,16 @@ outputs:
 runs:
   using: composite
   steps:
+    - name: Check Bob API key
+      shell: bash
+      env:
+        BOB_API_KEY: ${{ inputs.api-key }}
+      run: |
+        if [ -z "$BOB_API_KEY" ]; then
+          echo "::error::The repository secret BOB_API_KEY is not set. Run: gh secret set BOB_API_KEY (see docs/INSTRUCTIONS.md, Bug Factory)."
+          exit 1
+        fi
+
     - name: Install Bob Shell
       shell: bash
       run: |
