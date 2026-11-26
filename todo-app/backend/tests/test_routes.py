@@ -90,6 +90,28 @@ class TestUpdateTodo:
         assert resp.status_code == 200
         assert resp.get_json()["title"] == "Updated"
 
+    def test_updating_title_preserves_completed(self, client):
+        todo = self._create(client)
+        client.put(f"/api/todos/{todo['id']}", json={"completed": True})
+        resp = client.put(f"/api/todos/{todo['id']}", json={"title": "Renamed"})
+        assert resp.status_code == 200
+        body = resp.get_json()
+        assert body["title"] == "Renamed"
+        assert body["completed"] is True
+        listed = client.get("/api/todos").get_json()
+        assert listed[0]["completed"] is True
+
+    def test_updating_title_keeps_uncompleted_todo_uncompleted(self, client):
+        todo = self._create(client)
+        resp = client.put(f"/api/todos/{todo['id']}", json={"title": "Renamed"})
+        assert resp.get_json()["completed"] is False
+
+    def test_clears_completed(self, client):
+        todo = self._create(client)
+        client.put(f"/api/todos/{todo['id']}", json={"completed": True})
+        resp = client.put(f"/api/todos/{todo['id']}", json={"completed": False})
+        assert resp.get_json()["completed"] is False
+
     def test_toggles_completed(self, client):
         todo = self._create(client)
         resp = client.put(f"/api/todos/{todo['id']}", json={"completed": True})

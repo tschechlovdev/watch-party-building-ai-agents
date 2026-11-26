@@ -58,7 +58,8 @@ def update_todo(todo_id):
             if not title:
                 return jsonify({"error": "title must not be empty"}), 400
             fields["title"] = title
-        fields["completed"] = 1 if data.get("completed") else 0
+        if "completed" in data:
+            fields["completed"] = 1 if data["completed"] else 0
 
         if fields:
             set_clause = ", ".join(f"{k} = ?" for k in fields)
