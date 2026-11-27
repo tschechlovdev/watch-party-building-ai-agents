@@ -35,10 +35,20 @@ your issues, pull requests and GitHub Actions runs (and your Bobcoins) stay your
 | Python 3.11+ with [`uv`](https://github.com/astral-sh/uv) | `uv --version` | Part 1 |
 | Node.js 18+ | `node --version` | Part 1 |
 | Git | `git --version` | Part 1 |
-| [GitHub CLI `gh`](https://cli.github.com), logged in | `gh auth status` | Part 2 |
+| [GitHub CLI `gh`](https://cli.github.com), logged in (not preinstalled) | `gh auth status` | Part 0 |
 | Bob API key of type *Inference* | You have the key saved | Part 5 |
 
-How to install `gh` and create the Bob API key: [INSTRUCTIONS.md, Step 7.1](INSTRUCTIONS.md#71-prerequisites).
+**Install `gh` before the session.** It is not part of macOS, Windows or Git:
+
+```bash
+brew install gh                      # macOS
+winget install --id GitHub.cli       # Windows
+# Linux: see https://cli.github.com
+gh auth login --hostname github.com --git-protocol https --web
+```
+
+More on `gh` (several accounts, 403 errors) and how to create the Bob API key:
+[INSTRUCTIONS.md, Step 7.1](INSTRUCTIONS.md#71-prerequisites).
 
 ### Create your copy from the template
 
@@ -63,6 +73,7 @@ gh repo create my-agent-team --public \
 
 ```bash
 gh repo clone <your-login>/my-agent-team
+# without gh: git clone https://github.com/<your-login>/my-agent-team.git
 cd my-agent-team
 cd todo-app/backend && uv run pytest && cd ../..     # expected: 17 passed
 ```
