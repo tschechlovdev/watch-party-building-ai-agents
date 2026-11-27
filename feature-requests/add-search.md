@@ -1,33 +1,37 @@
-# Feature Request: Search & Filter
+# Feature Request: Search and Filter
+
+Source: https://github.com/tschechlovdev/watch-party-building-ai-agents/issues/6
 
 ## Summary
 
-Allow users to search todos by title keyword and filter by completion status.
+Users want to search and filter their todo list so they can quickly find specific items without
+scrolling through everything.
 
-## Motivation
+## Description
 
-As the todo list grows it becomes hard to find specific items.
-A simple text search and a status filter would cover the vast majority of lookup needs.
+As the number of todos grows, finding a specific item or group of items becomes tedious. A search
+bar and filter controls let users instantly narrow the visible list to what they need.
 
-## Proposed Behaviour
+## Desired Behaviour
 
-- A search input above the list filters displayed todos to those whose title contains the typed text (case-insensitive).
-- A filter control lets the user show: **All** (default) | **Active** (not completed) | **Completed**.
-- Search and filter compose — both can be active at the same time.
-- Filtering and searching happen client-side on the already-loaded list (no new API endpoint needed).
-- Clearing the search input restores the full list instantly.
+- A search bar at the top of the list filters todos in real time as the user types.
+- Search matches against the todo title (case-insensitive, substring match).
+- Search is performed client-side — no new API endpoints required.
+- A filter toggle lets users show: All todos, Active only (not completed), Completed only.
+- Search and filter work together — applying a filter while searching shows only matching,
+  filtered results.
+- The count displayed below the list reflects the filtered result set, not the total.
+- When the search term is cleared, the full list (subject to active filter) reappears.
 
-## Acceptance Criteria
+## Acceptance Criteria (from earlier draft)
 
-1. Typing in the search box immediately narrows the visible todo list to title matches.
-2. The filter control switches between All / Active / Completed views.
-3. Search + filter combine correctly (e.g. "Active" filter + "milk" search shows only active todos containing "milk").
-4. An empty result state shows a friendly "No matching todos." message.
-5. No backend changes are required — this is a pure frontend feature.
-6. All existing backend tests continue to pass.
+- An empty result state shows a friendly "No matching todos." message.
+- No backend changes are required — this is a pure frontend feature.
+- All existing backend tests continue to pass.
 
 ## Out of Scope
 
-- Server-side search or pagination.
-- Search across fields other than title.
-- Saved filters.
+- Full-text search on the server side
+- Search across tags, due dates, or priority fields (title-only for v1)
+- Saved searches or named filters
+- Sorting controls
