@@ -468,16 +468,44 @@ Nothing to do here. Keep your repo: everything you built carries over.
 ## Try it out on your own
 
 The session shows each part once. To get your hands dirty, pick a starting point
-([table above](#start-where-you-like)) and one of these:
+([Start where you like](#start-where-you-like)) and pick what you want to try.
+**You don't need a perfect plan: tell Bob what you want and let Bob guide you.**
 
-| Start from | Try this | Guide |
+| Try this | Start from | How |
 |---|---|---|
-| `main` | Build the Kanban board with one orchestrator prompt | Part 1 |
-| `checkpoint/1-kanban` | Two or three features in parallel, then merge them and handle the conflicts | Part 2 |
-| `checkpoint/2-features` | Find the bug in the browser, let the orchestrator file the issue | Parts 3–4 |
-| `checkpoint/2-features` + Bob API key | Let the Bug Factory fix it in GitHub Actions | Part 5 |
-| Any | Write your own feature request in `feature-requests/` and run it | Part 1 |
-| Any | Report a vague bug ("the board is weird sometimes") and see what triage does | Part 5 |
+| **The SDLC team**: one feature, end to end | `main` | Part 1, or your own idea in `feature-requests/` |
+| **Git worktrees**: features in parallel | `checkpoint/1-kanban` | Part 2 |
+| **Bug fixing** with the orchestrator | `checkpoint/2-features` | Parts 3–4 |
+| **The Bug Factory**: issue → triage → PR | `checkpoint/2-features` + API key | Part 5 |
+| **More bugs**: break something yourself, or report a vague bug, and let the team fix it | `checkpoint/2-features` | Parts 4–5 |
+| **Change the team**: edit modes and skills in `.bob/`, add a role | any | Ask Bob, see below |
+| **A feature factory**: issues labelled `feature` → PM, Architect, Engineer, Reviewer in GitHub Actions → PR | any + API key | Ask Bob, see below |
+| **Bob as PR reviewer**: a GitHub Action that reviews every pull request | any + API key | Ask Bob, see below |
+| **Hard bugs**: hypotheses, tested in parallel by subagents | `checkpoint/2-features` | Ask Bob, see below |
+| **Your own project** or an open-source repo | — | Copy `.bob/` and adapt it |
+
+Prompts to start with (Bob in **Agent** mode, or *Plan* mode first if you want to
+review the plan):
+
+```text
+Add a GitHub Actions workflow like bob-bug-fix.yml for issues with the label
+"feature": run the PM, Architect, Engineer and Reviewer modes one after another
+with .github/actions/bob-run, then open a pull request. Explain each step.
+```
+```text
+Create a GitHub Action that runs Bob in reviewer-agent mode on every pull request
+and posts the review as a PR comment. Reuse .github/actions/bob-run.
+```
+```text
+<describe the bug>. Come up with three hypotheses for the root cause. Start one
+subagent per hypothesis, in parallel, each one tests its hypothesis (for example
+with a failing test). Then compare the results and tell me which one holds.
+```
+Bob starts several subagents when you ask for it. You don't need to set anything up.
+
+**How much autonomy?** Triage only, fixes on request, auto-fix for small bugs, or
+auto-merge: that is your decision, there is no right or wrong. Our advice: keep a
+person as the final gate who reviews and merges.
 
 Stuck? Ask Bob in **Ask** mode about the one thing that fails (see
 [Part 0](#prerequisites)).

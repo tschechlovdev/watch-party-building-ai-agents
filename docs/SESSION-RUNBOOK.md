@@ -12,11 +12,11 @@ section. The Bug Factory part has its own detailed script:
 | 0:00 | Intro + Part 0 | Title, agenda, "Your own copy" | Template → own repo → open in Bob | Live (2 min) |
 | 0:05 | 1 Kanban | Recap: SDLC team, orchestrator flow | **Video 1** (4 min) | Video |
 | 0:15 | 2 Parallel | Worktrees | **Video 2** (3 min) | Video |
-| 0:22 | 3 Bug | "All green, still broken" | Reproduce in the browser | Live |
-| 0:27 | 4 Orchestrator | Bug or feature? | Orchestrator files the issue | Live |
-| 0:32 | 5 Factory | Bug Factory section | Issue → triage → PR (+ optional Video 3) | Live |
-| 0:45 | 6 Outlook | Remote agents | — | Slides |
-| 0:48 | Try it out | "Start where you like", "Try it out!" | Checkpoints, setup help | Slides |
+| 0:22 | 3 Bug | "All green, still broken" | Checkpoint 2 in a fresh copy, reproduce | Live |
+| 0:27 | 4 Orchestrator | Bug or feature? | Key setup, orchestrator files the issue | Live |
+| 0:32 | 5 Factory | Bug Factory section | Triage → auto-fix → PR (+ optional Video 3) | Live |
+| 0:42 | 6 Outlook | Remote agents, "How much autonomy?" | — | Slides |
+| 0:47 | Try it out | "Try it out!" | Checkpoints, ideas, let Bob guide you | Slides |
 | 0:50 | Q&A | QR code / repo link | — | |
 
 **Trick for people following live:** the Kanban run takes 15–25 minutes. Ask
@@ -44,9 +44,9 @@ background while you go on. Anyone who is not done by Part 3 uses Checkpoint 1.
   so their own copies never contain solutions Bob could find):
   `git push https://github.com/tschechlovdev/watch-party-building-ai-agents HEAD:checkpoint/1-kanban`
 - [ ] Test the catch-up commands from WORKSHOP.md once in a fresh copy.
-- [ ] Your own demo copy is set up (`./scripts/setup-bug-factory.sh`; `gh variable list`
-  shows `BOB_ENABLED true`), with Checkpoint 2
-  merged into its `main`, and no open bug issues or fix PRs.
+- [ ] A **fresh** template copy for the live part (Parts 3–5 above): only `main`, no
+  checkpoint, no key yet. Plus a backup copy that already has Checkpoint 2, the key and a
+  finished fix PR, in case something goes wrong live.
 - [ ] Bob IDE: a fresh conversation in *SDLC Orchestrator Agent* mode, font size large.
 - [ ] Browser tabs: your demo repo (Issues, Actions, Pull requests), the app on
   `localhost:5173`, and a finished fix PR as a backup.
@@ -100,47 +100,76 @@ after Part 5, or skip that slide.
 
 ---
 
-## Part 3 — live (5 min)
+## Parts 3–5 — live, from a checkpoint (20 min)
 
-1. App on `main` of your demo copy. List view: tick a todo as done.
+You do this live in a **fresh copy** of the template, so participants see every step
+they need themselves: jump to a checkpoint, store the key, and let the factory work.
+
+**Prepare (before the session):** a fresh template copy `bug-factory-live` (only `main`),
+cloned, opened in Bob, `gh` on the right account. Nothing else: no checkpoint, no key.
+Have your Bob API key ready in your password manager.
+
+### Step 1 — Jump to Checkpoint 2 (2 min)
+```bash
+git fetch https://github.com/tschechlovdev/watch-party-building-ai-agents checkpoint/2-features
+git restore --source=FETCH_HEAD --staged --worktree :/
+git commit -m "Start from checkpoint 2" && git push
+```
+Say: "Anyone can start here. Four commands, and you have everything from the videos,
+including a bug we haven't found yet."
+
+### Step 2 — Part 3: the bug appears (3 min)
+1. Start backend and frontend. List view: tick a todo as done.
 2. Switch to **Board**: the card is still in *To Do*.
-3. Message: "Every PR was reviewed and green. The bug is *between* the features: Kanban
+3. Say: "Every PR was reviewed and green. The bug is *between* the features: Kanban
    syncs `status → completed`, but nobody syncs `completed → status`."
 
-## Part 4 — live (5 min)
+### Step 3 — Part 5 setup: your key (3 min)
+Do this before Part 4, so the issue from Part 4 starts the factory right away.
+1. Browser: bob.ibm.com → sign in → **API keys** → Create, type *Inference* (show the
+   page; use your prepared key, don't show its value).
+2. Terminal: `./scripts/setup-bug-factory.sh`. Paste the key when asked: "Nothing
+   appears while pasting. That's on purpose."
+3. `gh secret list` and `gh variable list`: `BOB_API_KEY` and `BOB_ENABLED true`.
 
+### Step 4 — Part 4: the orchestrator files the issue (4 min)
 1. New conversation, *SDLC Orchestrator Agent*:
    `When I tick a todo as done in the list view, it still shows up in "To Do" on the board.`
 2. Point out: it recognises a bug (Step 0 of the orchestrator skill), names the
    `file:line`, and changes no code.
 3. Answer "yes" when it offers to create the issue.
-4. Switch to the browser: the issue has the label `bug`, and the Actions tab already
-   shows a triage run (only if `BOB_ENABLED=true` in your demo copy).
 
-## Part 5 — live (10 min)
+### Step 5 — Part 5: triage and auto-fix (8 min)
+1. Browser, the new issue: "🤖 Bob is triaging this bug", then the triage comment with
+   root cause, fix options and a regression test (about 1 min). Labels:
+   `bob-triaged`, `bob-autofix-candidate`.
+2. Say: "Small, clear, and I am a collaborator: so Bob goes on and fixes it. For a
+   complex bug it would stop here and wait for a person to add `bob-fix`."
+3. Actions tab: the fix run with Engineer, Reviewer and the test gate (about 5 min).
+   Fill the wait with the slides "Same team, new job" and "Guardrails".
+4. The PR `fix: … (#n)`: diff, regression test, `Fixes #n`. Merge it.
+5. `git pull`, restart the backend, repeat Step 2: the card moves to *Done*.
 
-Follow [`BUG-FACTORY-DEMO.md`](BUG-FACTORY-DEMO.md), sections 2–6, using the issue
-from Part 4. If triage marks it as not auto-fixable, add the label `bob-fix` live:
-that shows the human gate. Finish by merging the PR and repeating Part 3 in the browser.
-
-## Part 3 note — say it once, live
-
-"No Kanban, no features yet? Copy in `checkpoint/2-features`. It has everything from the
-videos, including this bug." (WORKSHOP.md, *Start where you like*.)
+Details and backup: [`BUG-FACTORY-DEMO.md`](BUG-FACTORY-DEMO.md).
 
 ## Part 6 — slides (5 min)
 
-Only say what is confirmed about Bob's remote agents. The message: the factory light
-already has the shape (event → agents in the cloud → PR); remote agents move the same
-modes, skills and handoff files off the GitHub runner.
+**Outlook:** only say what is confirmed about Bob's remote agents. The message: the
+factory light already has the shape (event → agents in the cloud → PR); remote agents
+move the same modes, skills and handoff files off the GitHub runner.
 
-## Try it out — slides (2 min)
+**"How much autonomy?":** "Triage only, fix on request, auto-fix for small bugs, or
+auto-merge without anyone looking. How far you go is your decision; there is no right
+or wrong. Our advice: keep a person as the final gate. Don't go to the dark side of
+the factory, even if it has cookies."
 
-On the slide "Try it out!": "15 minutes of video are not enough to do all of this
-yourself. So pick a starting point: from scratch, Kanban done, or all features done
-with the bug. Each one is a checkpoint you copy into your own repo with four commands.
-Missing a tool? Ask Bob in Ask mode about that one thing. Bob Shell is optional; Bob
-can also help you install it."
+## Try it out — slides (3 min)
+
+On the slide "Try it out!": "15 minutes are not enough to do all of this yourself.
+Pick a checkpoint and pick what you want to try: the SDLC team, worktrees, bug fixing,
+the factory, or something new, like a feature factory or Bob as a PR reviewer. You
+don't need a perfect plan: tell Bob what you want and let Bob guide you. Even for hard
+bugs: ask Bob to make hypotheses and test each one in its own subagent, in parallel."
 
 ---
 
