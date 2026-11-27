@@ -1,14 +1,9 @@
-import re
-from datetime import date
-
 from flask import Blueprint, jsonify, request
-from models import get_db, VALID_STATUSES, VALID_PRIORITIES
+from models import get_db, VALID_STATUSES
 
 todos_bp = Blueprint("todos", __name__, url_prefix="/api/todos")
 
 STATUS_ERROR = "status must be one of: todo, in_progress, done"
-PRIORITY_ERROR = "priority must be one of: low, medium, high"
-DUE_DATE_ERROR = "due_date must be a valid date in YYYY-MM-DD format or null"
 
 
 def todo_to_dict(row):
@@ -17,9 +12,7 @@ def todo_to_dict(row):
         "title": row["title"],
         "completed": bool(row["completed"]),
         "status": row["status"],
-        "priority": row["priority"],
         "created_at": row["created_at"],
-        "due_date": row["due_date"],
     }
 
 
@@ -28,28 +21,6 @@ def _invalid_status(data):
         return False
     status = data["status"]
     return not isinstance(status, str) or status not in VALID_STATUSES
-
-
-def _invalid_priority(data):
-    if "priority" not in data:
-        return False
-    priority = data["priority"]
-    return not isinstance(priority, str) or priority not in VALID_PRIORITIES
-
-
-def _invalid_due_date(data):
-    if "due_date" not in data or data["due_date"] is None:
-        return False
-    value = data["due_date"]
-    if not isinstance(value, str) or not re.fullmatch(
-        r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value
-    ):
-        return True
-    try:
-        date.fromisoformat(value)
-    except ValueError:
-        return True
-    return False
 
 
 @todos_bp.get("")
@@ -69,24 +40,12 @@ def create_todo():
         return jsonify({"error": "title is required"}), 400
     if _invalid_status(data):
         return jsonify({"error": STATUS_ERROR}), 400
-    if _invalid_priority(data):
-        return jsonify({"error": PRIORITY_ERROR}), 400
-    if _invalid_due_date(data):
-        return jsonify({"error": DUE_DATE_ERROR}), 400
 
     status = data.get("status", "todo")
-    priority = data.get("priority", "medium")
     with get_db() as conn:
         cursor = conn.execute(
-            "INSERT INTO todos (title, status, completed, priority, due_date)"
-            " VALUES (?, ?, ?, ?, ?)",
-            (
-                title,
-                status,
-                1 if status == "done" else 0,
-                priority,
-                data.get("due_date"),
-            ),
+            "INSERT INTO todos (title, status, completed) VALUES (?, ?, ?)",
+            (title, status, 1 if status == "done" else 0),
         )
         conn.commit()
         row = conn.execute(
@@ -115,15 +74,6 @@ def update_todo(todo_id):
             fields["title"] = title
         if _invalid_status(data):
             return jsonify({"error": STATUS_ERROR}), 400
-        if _invalid_priority(data):
-            return jsonify({"error": PRIORITY_ERROR}), 400
-        if "priority" in data:
-            fields["priority"] = data["priority"]
-        if _invalid_due_date(data):
-            return jsonify({"error": DUE_DATE_ERROR}), 400
-
-        if "due_date" in data:
-            fields["due_date"] = data["due_date"]
 
         if "status" in data:
             fields["status"] = data["status"]
