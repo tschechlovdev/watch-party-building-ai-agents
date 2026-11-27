@@ -4,6 +4,10 @@ A hands-on watch-party project that demonstrates how to build an autonomous AI d
 
 The workflow takes a raw feature request and autonomously designs, implements, tests, and reviews real code changes in a full-stack Todo application (Flask backend + React frontend).
 
+> 🧑‍💻 **Joining the session "From Agent Team to Bug Factory"?** Follow the hands-on
+> guide [`docs/WORKSHOP.md`](docs/WORKSHOP.md). Start by creating your own copy with
+> **Use this template** (leave *Include all branches* unticked), not by cloning this repo.
+
 ---
 
 ## The Premise & Mental Model
