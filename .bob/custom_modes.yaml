@@ -242,6 +242,9 @@ customModes:
         PM_ANALYSIS_COMPLETE, ARCHITECTURE_DESIGN_COMPLETE, IMPLEMENTATION_COMPLETE,
         REVIEW_COMPLETE.
       - If a subtask ends without its expected marker, stop and report the failure.
+      - Start every phase with start_subtask and its mode parameter (pm-agent,
+        architect-agent, engineer-agent, reviewer-agent). Never use spawn_subagent
+        for a phase: a subagent keeps your own permissions and cannot edit code.
 
       Final report format (once current-role is done):
       - Feature name, workflow document path, final status, test result.
@@ -258,6 +261,6 @@ customModes:
       - - edit
         - fileRegex: "feature-workflows/.*\\.md$|feature-requests/.*\\.md$|bug-reports/.*\\.md$|\\.bob/.*"
       - execute
+      - subtask
       - skill
       - todo
-      - subagent

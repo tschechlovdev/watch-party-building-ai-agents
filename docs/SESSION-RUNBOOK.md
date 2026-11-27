@@ -36,7 +36,9 @@ background while you go on. Anyone who is not done by Part 3 uses Checkpoint 1.
   - Both must contain the sync bug (Part 3). Check it in the browser. If Bob happened
     to sync `completed → status` as well, remove that sync by hand on the checkpoint
     branches and note it in the commit message.
-  - Both must still contain the rename bug (`grep -n 'data.get("completed")' todo-app/backend/routes.py`).
+  - `checkpoint/2-features` includes the UI tidy-up (WORKSHOP.md Part 2, step 6).
+- [ ] In your recording copy, every feature issue that was built is closed (PRs with
+  `Closes #<n>`, or `gh issue close <n>`).
 - [ ] Push the checkpoints to the **workshop** repo only (participants fetch them on demand,
   so their own copies never contain solutions Bob could find):
   `git push https://github.com/tschechlovdev/watch-party-building-ai-agents HEAD:checkpoint/1-kanban`
@@ -67,18 +69,20 @@ Put a small caption in one corner the whole time: **"Follow along: WORKSHOP.md, 
 | 7 | Browser | List view, then **Board**, drag a card to *Done* | "It works." (Don't tick a checkbox in the list here, that's Part 3.) |
 | 8 | Terminal / GitHub | `gh pr create`, the PR page, merge | "Every feature ends as a normal PR. A person merges." |
 
-## Video 2 — Four features in parallel (target: 3 minutes)
+## Video 2 — Three features in parallel (target: 3 minutes)
 
 Caption: **"Follow along: WORKSHOP.md, Part 2"**.
 
 | # | Shot | Show on screen | Say |
 |---|---|---|---|
 | 1 | GitHub | The `feature` issues created in Video 1 | "Features come in as GitHub issues." |
-| 2 | Terminal | `git worktree add …` ×3, then `ls ..` | "One folder per feature, one branch each, one shared history." |
-| 3 | Screen grid | Three or four Bob windows, each with the orchestrator and an issue URL | "Four teams working at the same time, without getting in each other's way." |
-| 4 | GitHub | Four PRs, all green | |
-| 5 | GitHub / editor | A merge conflict in `App.jsx`, resolved (by hand or by Bob) | "Parallel work has a price: integration." |
-| 6 | Browser | The merged app: board, priorities, due dates, search | "Everything reviewed, everything green…" (cliffhanger for Part 3) |
+| 2 | Terminal | `git worktree add …` ×3, then `git worktree list` | "One folder per feature, one branch each, one shared history." |
+| 3 | Screen grid | Three Bob Shell tabs (or IDE windows), each `bob chat --mode orchestrator-agent` with an issue URL | "Three teams working at the same time, without getting in each other's way." |
+| 4 | GitHub | Three PRs with `Closes #<n>` | |
+| 5 | Terminal | Merge conflict after the first merge, `git merge origin/main`, Bob resolves it | "Parallel work has a price: integration." |
+| 6 | Browser | The merged app: three filter rows stacked on top of each other | "Every PR fine on its own. Together: three toolbars." |
+| 7 | Bob | The tidy-up prompt (WORKSHOP.md Part 2, step 6), then the app with one toolbar and the board | "Everything reviewed, everything green…" (cliffhanger for Part 3) |
+| 8 | Terminal | `git worktree remove …` ×3 | "Clean up the folders." |
 
 ## Video 3 (optional) — Bob checks the fix in the browser (target: 2 minutes)
 
@@ -133,7 +137,7 @@ modes, skills and handoff files off the GitHub runner.
 | Orchestrator starts the feature pipeline instead of reporting a bug | Stop it, start a new conversation and add "This is a bug." to the prompt |
 | No triage run starts | `gh workflow run bob-bug-triage.yml -f issue-number=<n>` |
 | Fix run is slow | Show the backup PR, come back to the live one in Q&A |
-| The sync bug is not autofix-eligible | Add `bob-fix` live, or use the rename bug: `./scripts/setup-bug-factory.sh --demo-issue` |
+| The sync bug is not autofix-eligible | Add `bob-fix` live: that shows the human gate |
 
 ## Reset after the session
 
@@ -141,4 +145,5 @@ modes, skills and handoff files off the GitHub runner.
 gh pr close <fix-pr> --delete-branch
 gh issue close <issue>
 gh variable set BOB_ENABLED --body false
+git worktree list && git worktree prune   # remove leftover worktrees from Video 2
 ```
