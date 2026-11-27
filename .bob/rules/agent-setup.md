@@ -27,3 +27,12 @@ Skills are scanned once at Bob startup. A fresh conversation always sees them.
 The SDLC agent skills must NOT have `metadata: disable-model-invocation: true` in their
 frontmatter — that flag prevents Bob from indexing them in the `use_skill` lookup table.
 The skills already have narrow enough descriptions to avoid accidental auto-triggering.
+
+## Bugs
+
+The **SDLC Orchestrator Agent** first decides whether a request is a bug or a feature
+(skill `orchestrator`, Step 0). Features run the PM -> Architect -> Engineer -> Reviewer
+pipeline. For a bug it fixes nothing: it reports the likely `file:line`, asks whether it
+should create the GitHub issue (label `bug`) or whether you will, and stops. The fix is
+done by the Bob Bug Factory in GitHub Actions (`bob-bug-triage.yml`, `bob-bug-fix.yml`),
+which uses the same Engineer and Reviewer agents.

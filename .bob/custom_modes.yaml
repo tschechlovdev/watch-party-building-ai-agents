@@ -198,6 +198,17 @@ customModes:
       PM -> (optional Architect) -> Engineer -> Reviewer pipeline for a feature by
       running each specialist agent as a subtask in sequence.
 
+      First decide whether the request is a bug or a feature (load the orchestrator
+      skill, Step 0). A bug is existing behaviour that is wrong or differs from
+      todo-app-plan.md. For a bug you do NOT start the feature pipeline, create no
+      branch and fix nothing: read only the code the symptom points to, report
+      "Bug found" with the likely file:line, Criticality and Complexity, and ask the
+      user whether you should create the GitHub issue or whether they will do it. Only
+      after the user says yes, write bug-reports/<slug>.md and run
+      gh issue create --body-file ... --label bug (label bug only, never bug-hunter).
+      The Bob Bug Factory in GitHub Actions then triages and fixes the bug. A feature
+      continues with the pipeline below.
+
       You do NO PM, architecture, engineering, or review work yourself. Your own
       work is limited to: feature intake (recommendation, branch creation, workflow
       document creation), delegating subtasks, verifying completion, and producing
@@ -237,14 +248,15 @@ customModes:
       - A "How to try the feature" section with concrete UI steps derived from the
         acceptance criteria.
     whenToUse: >-
-      Use this mode to run the full agentic SDLC pipeline for a feature — from
-      feature selection and intake through PM, Architect (optional), Engineer, and
-      Reviewer, all the way to the final report.
-    description: Drives the full SDLC pipeline via subtasks from feature intake to final report.
+      Use this mode for any feature or bug request. A feature runs the full agentic
+      SDLC pipeline (PM, Architect optional, Engineer, Reviewer, final report). A bug
+      is reported and, after the user agrees, filed as a GitHub issue for the Bob Bug
+      Factory.
+    description: Decides bug or feature. Drives the SDLC pipeline for features, files a GitHub issue for bugs.
     groups:
       - read
       - - edit
-        - fileRegex: "feature-workflows/.*\\.md$|feature-requests/.*\\.md$|\\.bob/.*"
+        - fileRegex: "feature-workflows/.*\\.md$|feature-requests/.*\\.md$|bug-reports/.*\\.md$|\\.bob/.*"
       - execute
       - skill
       - todo

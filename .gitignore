@@ -43,3 +43,6 @@ logs/
 
 # Bob task files
 bob-task*.json
+
+# Bug report drafts written by the Orchestrator (local only)
+bug-reports/
