@@ -22,8 +22,8 @@ You can follow along live, or do everything later at your own pace.
 | [0](#part-0--your-own-copy-of-the-repo) | Your own copy of the repo | GitHub account, Bob |
 | [1](#part-1--recap-the-team-and-how-main-was-built) | Recap: the team, and how `main` was built | Watch only |
 | [2](#part-2--a-bug-appears) | A bug appears | Browser |
-| [3](#part-3--the-orchestrator-files-the-issue) | The orchestrator files the issue | Bob IDE, `gh` |
-| [4](#part-4--the-bug-factory-fixes-it) | The Bug Factory fixes it | Bob API key, `gh` |
+| [3](#part-3--turn-on-the-factory-then-let-the-orchestrator-file-the-issue) | Turn on the factory, then let the orchestrator file the issue | Bob API key, Bob IDE, `gh` |
+| [4](#part-4--the-bug-factory-fixes-it) | The Bug Factory fixes it | Browser |
 | [5](#part-5--outlook-and-how-much-autonomy) | Outlook, and how much autonomy | — |
 | [Try it out](#try-it-out-on-your-own) | Go back in time, build features, more bugs, your own factory | Your choice |
 
@@ -35,7 +35,8 @@ You can follow along live, or do everything later at your own pace.
 | The todo app | Kanban board, due dates, priorities, search and filters |
 | How it was built | `feature-workflows/*-workflow.md`: one handoff document per feature |
 | **A bug** | Ticking a todo as done in the list does not move it to *Done* on the board |
-| The Bug Factory | `.github/workflows/bob-bug-*.yml`, off until you add your API key (Part 4) |
+| **A second bug** | Hidden. Find it yourself after the session ([Try it out](#bug-2-find-it-yourself)) |
+| The Bug Factory | `.github/workflows/bob-bug-*.yml`, off until you add your API key (Part 3) |
 
 ### Go back in time (optional)
 
@@ -74,7 +75,7 @@ your issues, pull requests and GitHub Actions runs (and your Bobcoins) stay your
 | Node.js 18+ | `node --version` | Part 2 |
 | Git | `git --version` | Part 0 |
 | [GitHub CLI `gh`](https://cli.github.com), logged in (not preinstalled) | `gh auth status` | Part 3 |
-| Bob API key of type *Inference* | You have the key saved | Part 4 |
+| Bob API key of type *Inference* | You have the key saved | Part 3 |
 | *(Optional)* [Bob Shell](#bob-shell-optional) | `bob --version` | Try it out |
 
 **Install `gh` before the session.** It is not part of macOS, Windows or Git:
@@ -149,7 +150,7 @@ and the PM, Architect, Engineer and Reviewer agents.
 ### Check your setup (1 minute)
 
 Run these in the `my-agent-team` folder. Each one should print a version, and the
-tests should end with **94 passed**:
+tests should end with **93 passed**:
 
 ```bash
 git --version && uv --version && node --version && gh --version
@@ -206,43 +207,15 @@ on its own; the bug sits between them.
 
 ---
 
-## Part 3 — The orchestrator files the issue
+## Part 3 — Turn on the factory, then let the orchestrator file the issue
 
-**Watch:** we describe the problem to the same orchestrator as if it were a feature
-request. It notices that it is a bug, points to the likely line, and offers to file
-a GitHub issue instead of starting the feature pipeline.
+**Watch:** first the Bug Factory gets its key. Then we describe the problem to the same
+orchestrator as if it were a feature request. It notices that it is a bug, points to the
+likely line, and files a GitHub issue with the label `bug`. That label starts the
+factory right away.
 
-### Do it yourself
-
-1. Start a **new** conversation in **SDLC Orchestrator Agent** and send:
-   ```text
-   When I tick a todo as done in the list view, it still shows up in "To Do" on the board.
-   ```
-2. Bob answers with `🐞 Bug found`, the likely `file:line`, and a criticality and
-   complexity. It does **not** change any code.
-3. When Bob asks whether it should create the GitHub issue, answer **yes**. It
-   writes `bug-reports/<slug>.md` and runs `gh issue create … --label bug`.
-   If the Bug Factory is not set up yet (Part 4), no Actions run starts. That's fine:
-   you start triage for this issue in Part 4.
-
-> **Tip:** set up the Bug Factory first (Part 4, steps 1 and 2). Then the issue from
-> this part starts the factory right away.
-
-✅ **Checkpoint 3:** your repo has an open issue with the label `bug`.
-
-**Catch up:** create the issue yourself:
-```bash
-gh issue create --label bug --title "Done in the list, still To Do on the board" \
-  --body "When I tick a todo as done in the list view, it still shows up in To Do on the Kanban board."
-```
-
----
-
-## Part 4 — The Bug Factory fixes it
-
-**Watch:** nobody opens an IDE. The `bug` label starts Bob in GitHub Actions. It
-triages the issue, then the same Engineer and Reviewer agents fix it, the workflow
-runs the tests itself, and a pull request appears.
+> **Order matters:** set up the key (steps 1–2) **before** the issue is created
+> (step 3). The factory only reacts to new `bug` issues while it is switched on.
 
 ### Do it yourself
 
@@ -292,23 +265,52 @@ gh variable list    # shows BOB_ENABLED  true
   Actions to create and approve pull requests*.
 </details>
 
-#### 3. Let the factory fix the bug
+#### 3. Let the orchestrator file the issue
 
-1. If you created the issue in Part 3 *before* this setup, start triage for it:
-   ```bash
-   gh workflow run bob-bug-triage.yml -f issue-number=<n>
+1. Start a **new** conversation in **SDLC Orchestrator Agent** and send:
+   ```text
+   When I tick a todo as done in the list view, it still shows up in "To Do" on the board.
    ```
-   New issues with the label `bug` start triage on their own from now on.
-2. Watch it run: `gh run watch` or the **Actions** tab.
+2. Bob answers with `🐞 Bug found`, the likely `file:line`, and a criticality and
+   complexity. It does **not** change any code.
+3. When Bob asks whether it should create the GitHub issue, answer **yes**. It
+   writes `bug-reports/<slug>.md` and runs `gh issue create … --label bug`.
+4. Open the issue in the browser: within seconds, "🤖 Bob is triaging this bug" appears.
+
+✅ **Checkpoint 3:** `BOB_API_KEY` and `BOB_ENABLED` are set, and your repo has an issue
+with the label `bug` that Bob is triaging.
+
+**Catch up:** create the issue yourself (after steps 1–2):
+```bash
+gh issue create --label bug --title "Done in the list, still To Do on the board" \
+  --body "When I tick a todo as done in the list view, it still shows up in To Do on the Kanban board."
+```
+
+---
+
+## Part 4 — The Bug Factory fixes it
+
+**Watch:** nobody opens an IDE. The `bug` label has started Bob in GitHub Actions. It
+triages the issue, then the same Engineer and Reviewer agents fix it, the workflow
+runs the tests itself, and a pull request appears.
+
+### Do it yourself
+
+The issue from Part 3 has already started the factory. Nothing to type here: watch it.
+
+> **No run started?** The issue was created before the factory was on (Part 3, steps 1–2).
+> Start triage for it by hand: `gh workflow run bob-bug-triage.yml -f issue-number=<n>`.
+
+1. Watch it run: `gh run watch` or the **Actions** tab.
 
    On the issue you should see, in this order:
    - "🤖 Bob is triaging this bug" (right away)
    - the triage comment with root cause, fix options and a regression test (about 1 min)
    - a pull request `fix: … (#n)` (about 5 min), if Bob rated the fix as small and clear
      and you are a collaborator of the repo
-3. If Bob did not start the fix on its own, add the label **`bob-fix`** to the issue.
+2. If Bob did not start the fix on its own, add the label **`bob-fix`** to the issue.
    That is the human gate.
-4. Review and merge the PR. Then `git pull`, restart the backend and repeat Part 2:
+3. Review and merge the PR. Then `git pull`, restart the backend and repeat Part 2:
    the card moves to *Done*.
 
 **Try next:** a vague report ("the app is weird sometimes"), or a prompt injection
@@ -355,6 +357,7 @@ The session shows each part once. To get your hands dirty, pick a starting point
 | **A new feature** on top: tags, or an analytics dashboard | `main` | [C](#c-a-new-feature-on-main) |
 | **Bug fixing** with the orchestrator | `main` | Parts 2–3 |
 | **The Bug Factory**: issue → triage → PR | `main` + API key | Part 4 |
+| **Bug #2**: a second bug is hidden on `main`. Find it, report it, let the factory fix it | `main` + API key | [Bug #2](#bug-2-find-it-yourself) |
 | **More bugs**: break something yourself, or report a vague bug, and let the team fix it | `main` | Parts 3–4 |
 | **Change the team**: edit modes and skills in `.bob/`, add a role | any | Ask Bob, see below |
 | **A feature factory**: issues labelled `feature` → PM, Architect, Engineer, Reviewer in GitHub Actions → PR | any + API key | Ask Bob, see below |
@@ -380,6 +383,23 @@ subagent per hypothesis, in parallel, each one tests its hypothesis (for example
 with a failing test). Then compare the results and tell me which one holds.
 ```
 Bob starts several subagents when you ask for it. You don't need to set anything up.
+
+### Bug #2: find it yourself
+
+`main` has a second bug that we don't show in the session. It is about **due dates**.
+Use the app like a user would, until something doesn't do what it promises. Then:
+
+1. Describe what you see to the **SDLC Orchestrator Agent**, the way a user would, and
+   let it file the issue (the factory must be on, see Part 3). Or write the issue
+   yourself, as vague as you like, with the label `bug`.
+2. Watch triage and the fix, as in Part 4. Is it an auto-fix candidate?
+3. Merge the PR and check the app again.
+
+<details>
+<summary>Stuck? A hint</summary>
+
+Give a todo a due date. Now try to get rid of that date again.
+</details>
 
 Stuck? Ask Bob in **Ask** mode about the one thing that fails (see
 [Part 0](#prerequisites)).

@@ -122,7 +122,7 @@ def update_todo(todo_id):
         if _invalid_due_date(data):
             return jsonify({"error": DUE_DATE_ERROR}), 400
 
-        if "due_date" in data:
+        if data.get("due_date"):
             fields["due_date"] = data["due_date"]
 
         if "status" in data:

@@ -57,7 +57,7 @@ agrees, to open the issue.
    - Use **only** the label `bug`. Never add `bug-hunter`: the triage workflow skips
      issues with that label.
    - Show the issue URL and say: "If the Bug Factory is set up (`BOB_API_KEY` secret
-     and `BOB_ENABLED=true`, docs/WORKSHOP-2.md Part 4), triage starts now; progress is in
+     and `BOB_ENABLED=true`, docs/WORKSHOP-2.md Part 3), triage starts now; progress is in
      the repository's Actions tab. If the bug is small and clear and you are a
      collaborator, it opens a fix pull request; otherwise add the label `bob-fix`.
      Not set up yet? Run `./scripts/setup-bug-factory.sh`, then

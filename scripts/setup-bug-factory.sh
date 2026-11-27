@@ -51,7 +51,7 @@ if [ -n "${BOB_API_KEY:-}" ]; then
   ok "stored from \$BOB_API_KEY"
 else
   echo "  Paste your Bob API key and press Enter. The input is hidden: you will see nothing."
-  echo "  (Create the key at bob.ibm.com → API keys, type Inference. See docs/WORKSHOP-2.md, Part 4.)"
+  echo "  (Create the key at bob.ibm.com → API keys, type Inference. See docs/WORKSHOP-2.md, Part 3.)"
   gh secret set BOB_API_KEY -R "$REPO"
   ok "stored"
 fi

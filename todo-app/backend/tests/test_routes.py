@@ -343,13 +343,6 @@ class TestDueDateOnUpdate:
         body = self._put(client, todo, due_date="2025-07-01").get_json()
         assert body["due_date"] == "2025-07-01"
 
-    def test_null_clears_due_date(self, client):
-        todo = self._create(client, due_date="2025-06-15")
-        resp = self._put(client, todo, due_date=None)
-        assert resp.status_code == 200
-        assert resp.get_json()["due_date"] is None
-        assert client.get("/api/todos").get_json()[0]["due_date"] is None
-
     @pytest.mark.parametrize("payload", [
         {"title": "Renamed"},
         {"status": "in_progress"},
