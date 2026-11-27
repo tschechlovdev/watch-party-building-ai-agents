@@ -42,7 +42,7 @@ When I tick a todo as done in the list view, it still shows up in "To Do" on the
 ```
 
 Needs: Bob, Python 3.11+ with `uv`, Node.js 18+, Git, and the GitHub CLI `gh`.
-For the Bug Factory also a Bob API key ([`docs/WORKSHOP-2.md`, Part 4](docs/WORKSHOP-2.md#part-4--the-bug-factory-fixes-it)).
+For the Bug Factory also a Bob API key ([`docs/WORKSHOP-2.md`, Part 3](docs/WORKSHOP-2.md#part-3--turn-on-the-factory-then-let-the-orchestrator-file-the-issue)). Set it up **before** you file the bug issue.
 
 ## What is on `main`, and how to go back
 

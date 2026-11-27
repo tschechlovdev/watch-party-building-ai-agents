@@ -15,15 +15,15 @@ script: [`BUG-FACTORY-DEMO.md`](BUG-FACTORY-DEMO.md).
 | 0:00 | Intro + Part 0 | Title, agenda, "Your own copy", "What is on main" | Template → own repo | Live |
 | 0:04 | 1 Recap | Part 1 slides (marked *From Part 1*) | **Video 1** Kanban (4 min), **Video 2** worktrees (3 min) | Video |
 | 0:16 | 2 Bug | "All green, and still broken" | Reproduce in the browser | Live |
-| 0:20 | 3 Orchestrator | "Bug or feature?" | Key setup, orchestrator files the issue | Live |
+| 0:20 | 3 Key + issue | "Hands-on 3: your key first", "Bug or feature?" | Key setup, then the orchestrator files the issue | Live |
 | 0:28 | 4 Factory | Bug Factory section | Triage → auto-fix → PR (+ optional Video 3) | Live |
 | 0:40 | 5 Outlook | Remote agents, "How much autonomy?" | — | Slides |
 | 0:45 | Try it out | "Go back in time", "Try it out!" | — | Slides |
 | 0:48 | Q&A | QR code / repo link | — | |
 
 **For people following live:** a fresh copy of the template already has the bug. They
-can reproduce it (Part 2) and let the orchestrator file it (Part 3) without an API key.
-The Bug Factory (Part 4) needs their own Bob API key.
+can reproduce it (Part 2) without an API key. The Bug Factory needs their own Bob API
+key, set up **before** the orchestrator files the issue (Part 3).
 
 ---
 
@@ -110,15 +110,15 @@ Part 4 on the slide "Optional: Bob checks the fix in the browser", or skip that 
 3. Say: "Every PR was reviewed and green. The bug is *between* the features: Kanban
    syncs `status → completed`, but nobody syncs `completed → status`."
 
-### Part 4 setup first — your key (3 min)
-Do this before Part 3, so the issue from Part 3 starts the factory right away.
+### Part 3, step 1 — your key first (3 min)
+Always before the issue: the factory only reacts to new `bug` issues while it is on.
 1. Browser: bob.ibm.com → sign in → **API keys** → Create, type *Inference*. Show the
    page; use your prepared key and don't show its value.
 2. Terminal: `./scripts/setup-bug-factory.sh`. Paste the key when asked: "Nothing
    appears while pasting. That's on purpose. No export, no file."
 3. `gh secret list` and `gh variable list`: `BOB_API_KEY` and `BOB_ENABLED true`.
 
-### Part 3 — the orchestrator files the issue (4 min)
+### Part 3, step 2 — the orchestrator files the issue (4 min)
 1. New conversation, *SDLC Orchestrator Agent*:
    `When I tick a todo as done in the list view, it still shows up in "To Do" on the board.`
 2. Point out: it recognises a bug (Step 0 of the orchestrator skill), names the
