@@ -54,7 +54,8 @@ Put a small caption in one corner the whole time: **"Follow along: WORKSHOP.md, 
 | # | Shot | Show on screen | Say |
 |---|---|---|---|
 | 1 | GitHub repo page | **Use this template → Create a new repository**, leave *Include all branches* unticked | "Not clone, not fork: your own copy, so issues, Actions and Bobcoins stay yours." |
-| 2 | Terminal | `gh repo clone …`, `uv run pytest` → 17 passed | "The starting point: a small todo app with tests." |
+| 2 | Terminal | `git clone https://github.com/<you>/my-agent-team.git` | "Plain git is enough here." |
+| 2b | Bob (Code mode) | The setup-check prompt from WORKSHOP.md Part 0; Bob checks the tools and runs `uv run pytest` → 17 passed | "Bob can even guide you through the setup." |
 | 3 | Bob | Open folder, mode list with the five SDLC agents | "The same team as last time: orchestrator plus four specialists." |
 | 4 | Bob | Orchestrator prompt: `Please run the full workflow for feature-requests/kanban-board.md` | "One prompt. Everything else is delegated." |
 | 5 | Split: Bob + workflow doc | `current-role:` switching pm → architect → engineer → reviewer; sections filling in | "They never talk to each other directly. One markdown file is the shared memory." |
