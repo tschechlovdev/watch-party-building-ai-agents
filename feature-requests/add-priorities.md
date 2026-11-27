@@ -1,32 +1,35 @@
-# Feature Request: Task Priorities
+# Feature Request: Todo Priorities
+
+Source: https://github.com/tschechlovdev/watch-party-building-ai-agents/issues/3
 
 ## Summary
 
-Allow users to assign a priority level to each todo item so they can focus on what matters most.
+Users want to mark each todo with a priority level so they can focus on what matters most first.
 
-## Motivation
+## Description
 
-Currently all tasks look the same. Users have no way to signal urgency or importance.
-A simple Low / Medium / High priority field would let users sort and visually distinguish tasks.
+At the moment all todos look the same regardless of urgency. Users have no way to signal which items
+are most important. Adding a priority field — low, medium, or high — lets users triage their list
+visually and sort or filter by importance.
 
-## Proposed Behaviour
+## Desired Behaviour
 
-- When creating a todo, the user can optionally pick a priority: **Low**, **Medium**, or **High**. Default is **Medium**.
-- Existing todos without a priority are treated as **Medium**.
-- The priority is shown as a coloured badge on each todo item.
-- The todo list is sorted by priority descending (High first), then by creation date descending within each priority group.
+- When creating a new todo, the user can optionally set a priority (default: medium).
+- The priority of an existing todo can be changed after creation.
+- Each todo displays a visual indicator of its priority (e.g. a badge or colour-coded label).
+- Users can filter the list to show only todos of a given priority.
 
-## Acceptance Criteria
+## Priority Levels
 
-1. `POST /api/todos` accepts an optional `priority` field (`"low"`, `"medium"`, `"high"`).
-2. `PUT /api/todos/<id>` accepts an optional `priority` field to update it.
-3. `GET /api/todos` returns `priority` on every item; missing values default to `"medium"`.
-4. The frontend shows a coloured badge: red = High, yellow = Medium, grey = Low.
-5. The list is ordered High → Medium → Low, then newest-first within each group.
-6. All existing backend tests continue to pass.
+| Level | Meaning |
+|---|---|
+| `high` | Urgent — needs attention soon |
+| `medium` | Normal priority (default) |
+| `low` | Nice to have, no deadline |
 
 ## Out of Scope
 
-- Priority-based filtering or search.
-- Custom priority labels.
-- Priority sorting toggled by the user — sorting is always applied.
+- Priority-based notifications or reminders
+- Custom priority labels beyond the three fixed levels
+- Automatic prioritisation by AI
+- Priority sorting on the server side (client-side sort is acceptable for v1)

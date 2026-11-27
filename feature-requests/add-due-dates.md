@@ -1,33 +1,32 @@
 # Feature Request: Due Dates
 
+Source: https://github.com/tschechlovdev/watch-party-building-ai-agents/issues/5
+
 ## Summary
 
-Allow users to set a due date on each todo item so they can track deadlines.
+Users want to assign a due date to each todo so they can track deadlines and see at a glance which
+items are overdue.
 
-## Motivation
+## Description
 
-Users often have tasks that need to be done by a specific date. Without due dates, the app
-cannot help them manage time-sensitive work or surface overdue items.
+Many tasks have a real-world deadline. Without due dates, users must keep track of deadlines
+externally (in a calendar, in their head, etc.) while managing their todo list separately. Adding a
+due date field lets users attach a target completion date to each todo and highlights overdue items.
 
-## Proposed Behaviour
+## Desired Behaviour
 
 - When creating or editing a todo, the user can optionally set a due date (date only, no time).
-- Todos with a due date show the date on the item card.
-- Todos that are past their due date and not yet completed are visually highlighted (e.g. red text or border).
-- Todos without a due date show no date indicator.
-
-## Acceptance Criteria
-
-1. `POST /api/todos` accepts an optional `due_date` field (ISO 8601 date string, e.g. `"2025-12-31"`).
-2. `PUT /api/todos/<id>` accepts an optional `due_date` field; passing `null` clears it.
-3. `GET /api/todos` returns `due_date` on every item (`null` if not set).
-4. The frontend renders the due date on the card when present.
-5. Overdue and incomplete todos are highlighted in red.
-6. All existing backend tests continue to pass.
+- Todos without a due date behave exactly as today.
+- Todos with a due date display the date in a human-readable format (e.g. "Due Jun 15").
+- If the due date is in the past and the todo is not completed, the item is visually highlighted
+  as overdue (e.g. red text or a warning badge).
+- If the due date is today, it is highlighted differently from overdue (e.g. amber/yellow).
+- The list can be filtered to show: all todos, overdue only, due today, or no due date.
 
 ## Out of Scope
 
-- Time-of-day due times.
-- Recurring tasks.
-- Due-date based filtering or sorting.
-- Push notifications or reminders.
+- Due time (time-of-day — date only for v1)
+- Recurring todos (e.g. "every Monday")
+- Calendar view
+- Email or push notifications for upcoming due dates
+- Sorting by due date on the server side (client-side sort is acceptable for v1)

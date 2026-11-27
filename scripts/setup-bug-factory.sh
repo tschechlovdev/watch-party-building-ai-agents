@@ -51,7 +51,7 @@ if [ -n "${BOB_API_KEY:-}" ]; then
   ok "stored from \$BOB_API_KEY"
 else
   echo "  Paste your Bob API key and press Enter. The input is hidden: you will see nothing."
-  echo "  (Create the key at bob.ibm.com → API keys, type Inference. See docs/WORKSHOP.md, Part 5.)"
+  echo "  (Create the key at bob.ibm.com → API keys, type Inference. See docs/WORKSHOP-2.md, Part 4.)"
   gh secret set BOB_API_KEY -R "$REPO"
   ok "stored"
 fi
@@ -81,8 +81,8 @@ ok "BOB_ENABLED=true"
 if $DEMO_ISSUE; then
   step "7. Demo bug issue"
   URL=$(gh issue create -R "$REPO" --label bug \
-    --title "Done todos become undone when I edit them" \
-    --body "I had a todo marked as done and fixed a typo in it. After saving it was suddenly not done anymore?? Happened twice now. Kinda annoying")
+    --title "Done in the list, still To Do on the board" \
+    --body "When I tick a todo as done in the list view, it still shows up in To Do on the Kanban board. Shouldn't it move to Done?")
   ok "$URL"
   echo
   echo "  Watch Bob work: gh run watch -R $REPO   (or the Actions tab)"
