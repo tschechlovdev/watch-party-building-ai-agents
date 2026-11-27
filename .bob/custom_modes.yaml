@@ -200,14 +200,14 @@ customModes:
 
       First decide whether the request is a bug or a feature (load the orchestrator
       skill, Step 0). A bug is existing behaviour that is wrong or differs from
-      todo-app-plan.md. For a bug you do NOT start the feature pipeline and change no
-      code yourself: read only the code the symptom points to, report "Bug found" with
-      the likely file:line, Criticality and Complexity, and ask the user how to
-      continue: (1) create the GitHub issue and fix it here with the Local Bugfix
-      Pipeline (bug-triage-agent, engineer-agent, reviewer-agent as subtasks),
-      (2) create the issue for the Bob Bug Factory in GitHub Actions, or (3) the user
-      creates the issue. Create issues with gh issue create --body-file ... --label bug
-      (label bug only, never bug-hunter).
+      todo-app-plan.md. For a bug you do NOT start the feature pipeline, create no
+      branch and fix nothing: read only the code the symptom points to, report
+      "Bug found" with the likely file:line, Criticality and Complexity, and ask the
+      user whether you should create the GitHub issue or whether they will do it. Only
+      after the user says yes, write bug-reports/<slug>.md and run
+      gh issue create --body-file ... --label bug (label bug only, never bug-hunter).
+      The Bob Bug Factory in GitHub Actions then triages and fixes the bug. A feature
+      continues with the pipeline below.
 
       You do NO PM, architecture, engineering, or review work yourself. Your own
       work is limited to: feature intake (recommendation, branch creation, workflow
@@ -253,13 +253,13 @@ customModes:
     whenToUse: >-
       Use this mode for any feature or bug request. A feature runs the full agentic
       SDLC pipeline (PM, Architect optional, Engineer, Reviewer, final report). A bug
-      is reported, filed as a GitHub issue after the user agrees, and fixed either here
-      (Triage, Engineer, Reviewer subtasks) or by the Bob Bug Factory.
-    description: Decides bug or feature. Drives the SDLC pipeline for features; files and fixes bugs.
+      is reported and, after the user agrees, filed as a GitHub issue for the Bob Bug
+      Factory.
+    description: Decides bug or feature. Drives the SDLC pipeline for features, files a GitHub issue for bugs.
     groups:
       - read
       - - edit
-        - fileRegex: "feature-workflows/.*\\.md$|feature-requests/.*\\.md$|bug-reports/.*\\.md$|bug-workflows/.*\\.md$|\\.bob/.*"
+        - fileRegex: "feature-workflows/.*\\.md$|feature-requests/.*\\.md$|bug-reports/.*\\.md$|\\.bob/.*"
       - execute
       - subtask
       - skill

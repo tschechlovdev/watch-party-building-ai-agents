@@ -298,8 +298,8 @@ that is done, and it is no longer done.
 ## Part 4 — The orchestrator spots the bug
 
 **Watch:** we describe the problem to the same orchestrator as if it were a feature
-request. It notices that it is a bug, points to the likely line, files a GitHub issue
-and, if you want, fixes it right here with the same agent team. No API key needed.
+request. It notices that it is a bug, points to the likely line, and offers to file
+a GitHub issue instead of starting the feature pipeline.
 
 ### Do it yourself
 
@@ -309,24 +309,12 @@ and, if you want, fixes it right here with the same agent team. No API key neede
    ```
 2. Bob answers with `🐞 Bug found`, the likely `file:line`, and a criticality and
    complexity. It does **not** change any code.
-3. Bob asks how to continue. Answer **1** (create the issue and fix it here). It
+3. When Bob asks whether it should create the GitHub issue, answer **yes**. It
    writes `bug-reports/<slug>.md` and runs `gh issue create … --label bug`.
-   > Answer **2** instead if you want the Bug Factory in GitHub Actions to fix it
-   > (Part 5, needs a Bob API key). Then Bob stops after creating the issue.
-4. Bob creates the branch `bugfix/issue-<n>` and the document
-   `bug-workflows/issue-<n>-workflow.md`, then runs three subtasks, one after another:
-   **Bug Triage Agent** (root cause, fix options, regression test), **Engineer Agent**
-   (fix plus test), **Reviewer Agent** (verdict). Watch the document fill up.
-5. Try it: tick a todo in the list, then open the Board. The card is in *Done*.
-6. Open the PR with the commands from Bob's final report (`--body "Fixes #<n>"`) and
-   merge it.
+   If the Bug Factory is not set up yet (Part 5), no Actions run starts. That's fine:
+   you start triage for this issue in Part 5.
 
-✅ **Checkpoint 4:** your repo has a `bug` issue, and (if you chose option 1) a merged
-fix that closed it.
-
-> **Before Part 5:** the Bug Factory needs a bug to fix. If you fixed it here, start
-> Part 5 from `checkpoint/2-features` in a second copy, or file another bug (see
-> *Try next* in Part 5).
+✅ **Checkpoint 4:** your repo has an open issue with the label `bug`.
 
 **Catch up:** create the issue yourself:
 ```bash

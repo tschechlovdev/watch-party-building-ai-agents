@@ -112,8 +112,7 @@ after Part 5, or skip that slide.
    `When I tick a todo as done in the list view, it still shows up in "To Do" on the board.`
 2. Point out: it recognises a bug (Step 0 of the orchestrator skill), names the
    `file:line`, and changes no code.
-3. It asks who fixes it. Answer **2** (Bug Factory). Say: "No API key? Answer 1: the same
-   triage, engineer and reviewer agents fix it right here in the IDE, as subtasks."
+3. Answer "yes" when it offers to create the issue.
 4. Switch to the browser: the issue has the label `bug`, and the Actions tab already
    shows a triage run (only if `BOB_ENABLED=true` in your demo copy).
 
