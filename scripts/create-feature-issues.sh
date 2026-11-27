@@ -7,6 +7,8 @@
 #   ./scripts/create-feature-issues.sh --dry-run   # only show what would be created
 #
 # Safe to run twice: a feature that already has an issue with the same title is skipped.
+# Features that are already built (their feature-workflows/<name>-workflow.md says
+# current-role: done) are skipped too.
 # If gh cannot find your repo (for example with an SSH host alias), set it explicitly:
 #   GH_REPO=<your-login>/my-agent-team ./scripts/create-feature-issues.sh
 
@@ -39,6 +41,11 @@ for f in feature-requests/*.md; do
   # "# Feature Request: Kanban Board" -> "Kanban Board"
   title=$(head -n 1 "$f" | sed -E 's/^#[[:space:]]*(Feature Request:[[:space:]]*)?//')
   [ -n "$title" ] || title=$(basename "$f" .md)
+  wf="feature-workflows/$(basename "$f" .md)-workflow.md"
+  if [ -f "$wf" ] && grep -Eq '^current-role:[[:space:]]*done' "$wf"; then
+    skip "$title (already built)"
+    continue
+  fi
   if printf '%s\n' "$EXISTING" | grep -Fxq "$title"; then
     skip "$title (issue exists)"
   elif $DRY_RUN; then

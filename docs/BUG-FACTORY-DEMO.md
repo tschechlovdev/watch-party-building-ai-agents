@@ -6,8 +6,9 @@ tested pull request.
 
 ## Before the demo
 
-- [ ] `main` still contains the demo bug: renaming a done todo makes it not done
-      again. Check: `grep -n 'data.get("completed")' todo-app/backend/routes.py`
+- [ ] `main` still contains the demo bug: a todo ticked as done in the list stays in
+      *To Do* on the board. Check: `grep -n -A4 'if "status" in data' todo-app/backend/routes.py`
+      shows `elif "completed" in data:` without a `status` update.
 - [ ] `gh secret list` shows `BOB_API_KEY`, and `gh variable list` shows `BOB_ENABLED` `true`
 - [ ] No open fix PR for the demo bug (close the old ones)
 - [ ] Browser tabs ready: Issues, Actions, and a finished fix PR as a backup
@@ -18,8 +19,9 @@ tested pull request.
 Show two kinds of bug reports:
 - A **Bug Finder issue** (#12–#22): structured, with criticality, complexity and
   `file:line` evidence.
-- A **human issue**, for example: *"Done todos become undone when I edit them…
-  Kinda annoying"*. There's no location and no steps, which is the usual case.
+- A **human issue**, for example: *"When I tick a todo as done in the list view, it
+  still shows up in To Do on the board."* There's no location and no root cause, which
+  is the usual case.
 
 > "Machines write good bug reports. People don't. Can Bob close that gap and do the
 > fix as well?"
@@ -36,8 +38,8 @@ Show the diagram in the README (Bug Factory section):
 ## 3. Live: open the issue (4 min)
 
 ```bash
-gh issue create --label bug --title "Done todos become undone when I edit them" \
-  --body "I had a todo marked as done and fixed a typo in it. After saving it was suddenly not done anymore?? Happened twice now. Kinda annoying"
+gh issue create --label bug --title "Done in the list, still To Do on the board" \
+  --body "When I tick a todo as done in the list view, it still shows up in To Do on the Kanban board. Shouldn't it move to Done?"
 ```
 
 - Within seconds, "🤖 Bob is triaging this bug" appears.

@@ -57,7 +57,7 @@ agrees, to open the issue.
    - Use **only** the label `bug`. Never add `bug-hunter`: the triage workflow skips
      issues with that label.
    - Show the issue URL and say: "If the Bug Factory is set up (`BOB_API_KEY` secret
-     and `BOB_ENABLED=true`, WORKSHOP.md Part 5), triage starts now; progress is in
+     and `BOB_ENABLED=true`, docs/WORKSHOP-2.md Part 4), triage starts now; progress is in
      the repository's Actions tab. If the bug is small and clear and you are a
      collaborator, it opens a fix pull request; otherwise add the label `bob-fix`.
      Not set up yet? Run `./scripts/setup-bug-factory.sh`, then
@@ -85,7 +85,8 @@ You accept the feature in one of four ways:
 
 ### When no feature is provided
 
-1. List all `.md` files in `feature-requests/`.
+1. List all `.md` files in `feature-requests/`. Skip a feature that is already built:
+   its `feature-workflows/<name>-workflow.md` exists and says `current-role: done`.
 2. Read each one and analyse:
    - **Complexity** (Low / Medium / High): number of layers touched (DB, API,
      frontend), schema migrations, external dependencies.

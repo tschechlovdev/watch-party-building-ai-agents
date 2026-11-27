@@ -2,6 +2,12 @@
 
 This lab guide walks you through setting up and running the project from scratch as a workshop participant.
 
+> **Part 1 of "The Agentic Development Team".** This guide belongs to the first session
+> ([WORKSHOP-1.md](WORKSHOP-1.md)). `main` has moved on to Part 2 since then: after
+> cloning, run `git fetch origin checkpoint/0-start && git restore --source=FETCH_HEAD
+> --staged --worktree :/` to get the state of Part 1. Step 7 (Bug Factory) is part of
+> [Part 2](WORKSHOP-2.md).
+
 > 💡 **Looking for the completed solution?** Switch to the `sdlc-agents-solution` branch (`git checkout origin/sdlc-agents-solution`) to see the finished implementation and ready-to-use `.bob/` configuration.
 
 ---
