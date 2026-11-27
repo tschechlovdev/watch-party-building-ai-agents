@@ -13,15 +13,8 @@ async function request(url, options = {}) {
 
 export const getTodos = () => request(BASE)
 
-export const createTodo = (title, dueDate, priority) =>
-  request(BASE, {
-    method: 'POST',
-    body: JSON.stringify({
-      title,
-      priority,
-      ...(dueDate ? { due_date: dueDate } : {}),
-    }),
-  })
+export const createTodo = (title) =>
+  request(BASE, { method: 'POST', body: JSON.stringify({ title }) })
 
 export const updateTodo = (id, fields) =>
   request(`${BASE}/${id}`, { method: 'PUT', body: JSON.stringify(fields) })
