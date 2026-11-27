@@ -34,8 +34,10 @@ background while you go on. Anyone who is not done by Part 3 uses Checkpoint 1.
     to sync `completed → status` as well, remove that sync by hand on the checkpoint
     branches and note it in the commit message.
   - Both must still contain the rename bug (`grep -n 'data.get("completed")' todo-app/backend/routes.py`).
-- [ ] The workshop repo is a template, and `--include-all-branches` copies the checkpoints:
-  test it once with `gh repo create tmp-check --private --include-all-branches --template …`.
+- [ ] Push the checkpoints to the **workshop** repo only (participants fetch them on demand,
+  so their own copies never contain solutions Bob could find):
+  `git push https://github.com/tschechlovdev/watch-party-building-ai-agents HEAD:checkpoint/1-kanban`
+- [ ] Test the catch-up commands from WORKSHOP.md once in a fresh copy.
 - [ ] Your own demo copy is set up (`./scripts/setup-bug-factory.sh`), with Checkpoint 2
   merged into its `main`, and no open bug issues or fix PRs.
 - [ ] Bob IDE: a fresh conversation in *SDLC Orchestrator Agent* mode, font size large.
@@ -51,7 +53,7 @@ Put a small caption in one corner the whole time: **"Follow along: WORKSHOP.md, 
 
 | # | Shot | Show on screen | Say |
 |---|---|---|---|
-| 1 | GitHub repo page | **Use this template → Create a new repository**, tick *Include all branches* | "Not clone, not fork: your own copy, so issues, Actions and Bobcoins stay yours." |
+| 1 | GitHub repo page | **Use this template → Create a new repository**, leave *Include all branches* unticked | "Not clone, not fork: your own copy, so issues, Actions and Bobcoins stay yours." |
 | 2 | Terminal | `gh repo clone …`, `uv run pytest` → 17 passed | "The starting point: a small todo app with tests." |
 | 3 | Bob | Open folder, mode list with the five SDLC agents | "The same team as last time: orchestrator plus four specialists." |
 | 4 | Bob | Orchestrator prompt: `Please run the full workflow for feature-requests/kanban-board.md` | "One prompt. Everything else is delegated." |

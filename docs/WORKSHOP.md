@@ -8,7 +8,7 @@ This guide follows the session step by step. Each part has the same structure:
   behind or Bob took a different path.
 
 You can follow along live, or do everything later at your own pace. Every part
-works on its own, thanks to the checkpoint branches.
+works on its own: if you fall behind, you copy in a checkpoint from the workshop repo.
 
 | Part | Topic | Needs |
 |---|---|---|
@@ -45,13 +45,14 @@ How to install `gh` and create the Bob API key: [INSTRUCTIONS.md, Step 7.1](INST
 1. Open <https://github.com/tschechlovdev/watch-party-building-ai-agents>.
 2. Click **Use this template → Create a new repository**.
 3. Choose your account as owner and a name, for example `my-agent-team`.
-4. **Tick "Include all branches".** The checkpoint branches are only copied with this option.
+4. **Leave "Include all branches" unticked.** Your copy gets only `main`: no finished
+   solutions that Bob could find and copy. You fetch a checkpoint only if you need one.
 5. Choose *Public* or *Private* and click **Create repository**.
 
 Or do the same in one command:
 
 ```bash
-gh repo create my-agent-team --public --include-all-branches \
+gh repo create my-agent-team --public \
   --template tschechlovdev/watch-party-building-ai-agents
 ```
 
@@ -119,10 +120,14 @@ The full run takes about 15–25 minutes, depending on how many questions Bob as
 
 ✅ **Checkpoint 1:** `main` in your repo has the Kanban board.
 
-**Catch up:** merge the prepared result instead:
+**Catch up:** copy the prepared result onto your `main`. This fetches the checkpoint from
+the workshop repo and commits its files, without pulling in any other branch. It
+replaces your tracked files with the checkpoint, so unfinished work of your own is dropped:
 ```bash
-gh pr create --base main --head checkpoint/1-kanban --title "Kanban board (checkpoint)" --body "Checkpoint 1"
-gh pr merge checkpoint/1-kanban --merge && git switch main && git pull
+git switch main && git pull
+git fetch https://github.com/tschechlovdev/watch-party-building-ai-agents checkpoint/1-kanban
+git restore --source=FETCH_HEAD --staged --worktree :/
+git commit -m "Checkpoint 1: Kanban board" && git push
 ```
 
 ---
@@ -171,8 +176,10 @@ into `main`, including a merge conflict or two.
 
 **Catch up:**
 ```bash
-gh pr create --base main --head checkpoint/2-features --title "Features (checkpoint)" --body "Checkpoint 2"
-gh pr merge checkpoint/2-features --merge && git switch main && git pull
+git switch main && git pull
+git fetch https://github.com/tschechlovdev/watch-party-building-ai-agents checkpoint/2-features
+git restore --source=FETCH_HEAD --staged --worktree :/
+git commit -m "Checkpoint 2: features" && git push
 ```
 
 ---
