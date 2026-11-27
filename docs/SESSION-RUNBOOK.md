@@ -16,6 +16,7 @@ section. The Bug Factory part has its own detailed script:
 | 0:27 | 4 Orchestrator | Bug or feature? | Orchestrator files the issue | Live |
 | 0:32 | 5 Factory | Bug Factory section | Issue → triage → PR (+ optional Video 3) | Live |
 | 0:45 | 6 Outlook | Remote agents | — | Slides |
+| 0:48 | Try it out | "Start where you like", "Try it out!" | Checkpoints, setup help | Slides |
 | 0:50 | Q&A | QR code / repo link | — | |
 
 **Trick for people following live:** the Kanban run takes 15–25 minutes. Ask
@@ -58,7 +59,7 @@ Put a small caption in one corner the whole time: **"Follow along: WORKSHOP.md, 
 
 | # | Shot | Show on screen | Say |
 |---|---|---|---|
-| 1 | GitHub repo page | **Use this template → Create a new repository**, leave *Include all branches* unticked | "Not clone, not fork: your own copy, so issues, Actions and Bobcoins stay yours." |
+| 1 | GitHub repo page | **Use this template → Create a new repository**, leave *Include all branches* unticked | "Not clone, not fork: your own copy, so issues, Actions and Bobcoins stay yours. You don't have to build everything: later you can start from a checkpoint, for example with the Kanban board already done." |
 | 2 | Terminal | `git clone https://github.com/<you>/my-agent-team.git` | "Plain git is enough here." |
 | 2b | Terminal | The setup check from WORKSHOP.md Part 0 (versions + `uv run pytest -q` → 17 passed) | "One minute to check. If something is missing, ask Bob about that one thing." |
 | 3 | Bob | Open folder, mode list with the five SDLC agents | "The same team as last time: orchestrator plus four specialists." |
@@ -75,7 +76,7 @@ Caption: **"Follow along: WORKSHOP.md, Part 2"**.
 
 | # | Shot | Show on screen | Say |
 |---|---|---|---|
-| 1 | GitHub | The `feature` issues created in Video 1 | "Features come in as GitHub issues." |
+| 1 | GitHub | The `feature` issues created in Video 1 | "Starting here? Copy in checkpoint 1 first, it has the Kanban board. Features come in as GitHub issues." |
 | 2 | Terminal | `git worktree add …` ×3, then `git worktree list` | "One folder per feature, one branch each, one shared history." |
 | 3 | Screen grid | Three Bob Shell tabs (or IDE windows), each `bob chat --mode orchestrator-agent` with an issue URL | "Three teams working at the same time, without getting in each other's way." |
 | 4 | GitHub | Three PRs with `Closes #<n>` | |
@@ -120,11 +121,24 @@ Follow [`BUG-FACTORY-DEMO.md`](BUG-FACTORY-DEMO.md), sections 2–6, using the i
 from Part 4. If triage marks it as not auto-fixable, add the label `bob-fix` live:
 that shows the human gate. Finish by merging the PR and repeating Part 3 in the browser.
 
+## Part 3 note — say it once, live
+
+"No Kanban, no features yet? Copy in `checkpoint/2-features`. It has everything from the
+videos, including this bug." (WORKSHOP.md, *Start where you like*.)
+
 ## Part 6 — slides (5 min)
 
 Only say what is confirmed about Bob's remote agents. The message: the factory light
 already has the shape (event → agents in the cloud → PR); remote agents move the same
 modes, skills and handoff files off the GitHub runner.
+
+## Try it out — slides (2 min)
+
+On the slide "Try it out!": "15 minutes of video are not enough to do all of this
+yourself. So pick a starting point: from scratch, Kanban done, or all features done
+with the bug. Each one is a checkpoint you copy into your own repo with four commands.
+Missing a tool? Ask Bob in Ask mode about that one thing. Bob Shell is optional; Bob
+can also help you install it."
 
 ---
 

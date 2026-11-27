@@ -7,6 +7,9 @@ The workflow takes a raw feature request and autonomously designs, implements, t
 > 🧑‍💻 **Joining the session "From Agent Team to Bug Factory"?** Follow the hands-on
 > guide [`docs/WORKSHOP.md`](docs/WORKSHOP.md). Start by creating your own copy with
 > **Use this template** (leave *Include all branches* unticked), not by cloning this repo.
+> You don't have to start from scratch: the guide shows how to
+> [start from a checkpoint](docs/WORKSHOP.md#start-where-you-like) (Kanban done, or all
+> features done with the bug to fix).
 
 ---
 

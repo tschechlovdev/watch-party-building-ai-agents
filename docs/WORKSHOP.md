@@ -10,6 +10,28 @@ This guide follows the session step by step. Each part has the same structure:
 You can follow along live, or do everything later at your own pace. Every part
 works on its own: if you fall behind, you copy in a checkpoint from the workshop repo.
 
+### Start where you like
+
+The session is too short to build everything live. You don't have to start at the
+beginning: make your copy (Part 0), then pick a starting point.
+
+| Start from | What your `main` has | Good for | Continue with |
+|---|---|---|---|
+| `main` (nothing to do) | The plain todo app and the agent team | Building the Kanban board yourself | Part 1 |
+| `checkpoint/1-kanban` | + Kanban board | Features in parallel with worktrees | Part 2 |
+| `checkpoint/2-features` | + due dates, priorities, search; **contains the bug** | Finding and fixing the bug | Parts 3–5 |
+
+To start from a checkpoint, run this in your copy (replace the checkpoint name):
+```bash
+git switch main && git pull
+git fetch https://github.com/tschechlovdev/watch-party-building-ai-agents checkpoint/2-features
+git restore --source=FETCH_HEAD --staged --worktree :/
+git commit -m "Start from checkpoint 2" && git push
+```
+This copies only the files of that one checkpoint into your `main`. Your repo still
+has no solution branches that Bob could find. After the session, see
+[Try it out on your own](#try-it-out-on-your-own).
+
 | Part | Topic | Needs |
 |---|---|---|
 | [0](#part-0--your-own-copy-of-the-repo) | Your own copy of the repo | GitHub account, Bob |
@@ -37,6 +59,7 @@ your issues, pull requests and GitHub Actions runs (and your Bobcoins) stay your
 | Git | `git --version` | Part 0 |
 | [GitHub CLI `gh`](https://cli.github.com), logged in (not preinstalled) | `gh auth status` | Part 2 |
 | Bob API key of type *Inference* | You have the key saved | Part 5 |
+| *(Optional)* [Bob Shell](#bob-shell-optional) | `bob --version` | Part 2 |
 
 **Install `gh` before the session**, even though Parts 0 and 1 work without it. It is not
 part of macOS, Windows or Git:
@@ -50,6 +73,25 @@ gh auth login --hostname github.com --git-protocol https --web
 
 More on `gh` (several accounts, 403 errors) and how to create the Bob API key:
 [INSTRUCTIONS.md, Step 7.1](INSTRUCTIONS.md#71-prerequisites).
+
+**Missing a tool or stuck on setup? Ask Bob.** Open Bob in your copy, switch to
+**Ask** mode and describe the one problem, for example:
+```text
+uv --version says "command not found". Help me install uv on my machine.
+```
+Ask about one thing at a time. A general "check my whole setup" takes Bob 10+ minutes.
+
+#### Bob Shell (optional)
+
+Bob Shell is Bob in the terminal. It is handy for running several agents side by side
+(Part 2) and is what the Bug Factory uses in GitHub Actions. It is separate from the
+IDE and needs Node.js 24+:
+```bash
+npm install -g @ibm/bob
+bob --version
+bob chat --mode orchestrator-agent     # first start: accept the license and log in
+```
+Not working? Ask Bob in the IDE: `Help me install and log in to Bob Shell.`
 
 ### Create your copy from the template
 
@@ -374,6 +416,23 @@ instead of on a GitHub runner, for features as well as bugs, longer and more of 
 at once.
 
 Nothing to do here. Keep your repo: everything you built carries over.
+
+## Try it out on your own
+
+The session shows each part once. To get your hands dirty, pick a starting point
+([table above](#start-where-you-like)) and one of these:
+
+| Start from | Try this | Guide |
+|---|---|---|
+| `main` | Build the Kanban board with one orchestrator prompt | Part 1 |
+| `checkpoint/1-kanban` | Two or three features in parallel, then merge them and handle the conflicts | Part 2 |
+| `checkpoint/2-features` | Find the bug in the browser, let the orchestrator file the issue | Parts 3–4 |
+| `checkpoint/2-features` + Bob API key | Let the Bug Factory fix it in GitHub Actions | Part 5 |
+| Any | Write your own feature request in `feature-requests/` and run it | Part 1 |
+| Any | Report a vague bug ("the board is weird sometimes") and see what triage does | Part 5 |
+
+Stuck? Ask Bob in **Ask** mode about the one thing that fails (see
+[Part 0](#prerequisites)).
 
 ### After the workshop
 
