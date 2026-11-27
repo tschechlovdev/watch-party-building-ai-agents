@@ -56,9 +56,12 @@ agrees, to open the issue.
    - Run: `gh issue create --title "<title>" --body-file bug-reports/<slug>.md --label bug`
    - Use **only** the label `bug`. Never add `bug-hunter`: the triage workflow skips
      issues with that label.
-   - Show the issue URL and say: "The Bug Factory starts triage now. Progress is in
+   - Show the issue URL and say: "If the Bug Factory is set up (`BOB_API_KEY` secret
+     and `BOB_ENABLED=true`, WORKSHOP.md Part 5), triage starts now; progress is in
      the repository's Actions tab. If the bug is small and clear and you are a
-     collaborator, it opens a fix pull request; otherwise add the label `bob-fix`."
+     collaborator, it opens a fix pull request; otherwise add the label `bob-fix`.
+     Not set up yet? Run `./scripts/setup-bug-factory.sh`, then
+     `gh workflow run bob-bug-triage.yml -f issue-number=<n>`."
 5. **If the user wants to create it themselves:** print the title, the body and the
    ready-to-run `gh issue create ... --label bug` command. Create nothing.
 6. **Stop.** Do not branch, commit, fix or start a subtask.
