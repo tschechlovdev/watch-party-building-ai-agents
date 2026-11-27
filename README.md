@@ -31,7 +31,7 @@ The same team works in two places:
 gh repo create my-agent-team --public --clone \
   --template tschechlovdev/watch-party-building-ai-agents
 cd my-agent-team
-cd todo-app/backend && uv run pytest -q && cd ../..     # 94 passed
+cd todo-app/backend && uv run pytest -q && cd ../..     # 93 passed
 ```
 
 Open the folder in Bob, start a new conversation in **SDLC Orchestrator Agent** mode, and
@@ -47,7 +47,8 @@ For the Bug Factory also a Bob API key ([`docs/WORKSHOP-2.md`, Part 3](docs/WORK
 ## What is on `main`, and how to go back
 
 `main` is where Part 2 starts: the todo app with a Kanban board, due dates, priorities
-and search, all built by the agent team, **and one bug** between those features. Earlier
+and search, all built by the agent team, **and one bug** between those features (plus a
+second one, hidden, for you to find: [Bug #2](docs/WORKSHOP-2.md#bug-2-find-it-yourself)). Earlier
 states are on checkpoint branches:
 
 | State | Branch |

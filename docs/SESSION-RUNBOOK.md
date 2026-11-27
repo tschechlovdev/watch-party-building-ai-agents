@@ -61,7 +61,7 @@ The slides from Part 1 carry a *From Part 1* tag: go through them quickly. Then:
 
 Caption: **"Build it yourself: WORKSHOP-2.md → Build it yourself, A"**. The setup check
 in the video says *17 passed*: that was the state before the features. On today's `main`
-it is 94. Cut that shot or say so.
+it is 93. Cut that shot or say so.
 
 | # | Shot | Show on screen | Say |
 |---|---|---|---|
@@ -135,6 +135,9 @@ Always before the issue: the factory only reacts to new `bug` issues while it is
    Fill the wait with the slides "Same team, new job" and "Guardrails".
 4. The PR `fix: … (#n)`: diff, regression test, `Fixes #n`. Merge it.
 5. `git pull`, restart the backend, repeat Part 2: the card moves to *Done*.
+6. Bug #2 sits a few lines away in the same function. If triage or the fix PR mentions
+   it too, say: "Bob found a second one. Participants: that's yours to try." Their
+   copies are not affected.
 
 ---
 
@@ -155,6 +158,12 @@ the factory, even if it has cookies."
 earlier state into your `main`: the end of Part 1, or Kanban done. Four commands."
 Optional: run them live in your demo copy (`checkpoint/1-kanban`), show that the
 features are gone, and go back with `main`.
+
+**Bug #2 (don't spoil it):** `main` has a second, hidden bug for participants: the due
+date of a todo cannot be cleared (the × next to the date, or emptying the date field,
+does nothing). Cause: `update_todo` in `routes.py` only stores `due_date` when it is
+truthy, so `null` is ignored. Say only: "There is a second bug on main, about due dates.
+Find it, and let your factory fix it."
 
 **"Try it out!":** "Pick a starting point and pick what you want to try: the SDLC team,
 worktrees, bug fixing, the factory, or something new, like a feature factory or Bob as a

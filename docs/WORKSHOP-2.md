@@ -35,6 +35,7 @@ You can follow along live, or do everything later at your own pace.
 | The todo app | Kanban board, due dates, priorities, search and filters |
 | How it was built | `feature-workflows/*-workflow.md`: one handoff document per feature |
 | **A bug** | Ticking a todo as done in the list does not move it to *Done* on the board |
+| **A second bug** | Hidden. Find it yourself after the session ([Try it out](#bug-2-find-it-yourself)) |
 | The Bug Factory | `.github/workflows/bob-bug-*.yml`, off until you add your API key (Part 3) |
 
 ### Go back in time (optional)
@@ -149,7 +150,7 @@ and the PM, Architect, Engineer and Reviewer agents.
 ### Check your setup (1 minute)
 
 Run these in the `my-agent-team` folder. Each one should print a version, and the
-tests should end with **94 passed**:
+tests should end with **93 passed**:
 
 ```bash
 git --version && uv --version && node --version && gh --version
@@ -356,6 +357,7 @@ The session shows each part once. To get your hands dirty, pick a starting point
 | **A new feature** on top: tags, or an analytics dashboard | `main` | [C](#c-a-new-feature-on-main) |
 | **Bug fixing** with the orchestrator | `main` | Parts 2–3 |
 | **The Bug Factory**: issue → triage → PR | `main` + API key | Part 4 |
+| **Bug #2**: a second bug is hidden on `main`. Find it, report it, let the factory fix it | `main` + API key | [Bug #2](#bug-2-find-it-yourself) |
 | **More bugs**: break something yourself, or report a vague bug, and let the team fix it | `main` | Parts 3–4 |
 | **Change the team**: edit modes and skills in `.bob/`, add a role | any | Ask Bob, see below |
 | **A feature factory**: issues labelled `feature` → PM, Architect, Engineer, Reviewer in GitHub Actions → PR | any + API key | Ask Bob, see below |
@@ -381,6 +383,23 @@ subagent per hypothesis, in parallel, each one tests its hypothesis (for example
 with a failing test). Then compare the results and tell me which one holds.
 ```
 Bob starts several subagents when you ask for it. You don't need to set anything up.
+
+### Bug #2: find it yourself
+
+`main` has a second bug that we don't show in the session. It is about **due dates**.
+Use the app like a user would, until something doesn't do what it promises. Then:
+
+1. Describe what you see to the **SDLC Orchestrator Agent**, the way a user would, and
+   let it file the issue (the factory must be on, see Part 3). Or write the issue
+   yourself, as vague as you like, with the label `bug`.
+2. Watch triage and the fix, as in Part 4. Is it an auto-fix candidate?
+3. Merge the PR and check the app again.
+
+<details>
+<summary>Stuck? A hint</summary>
+
+Give a todo a due date. Now try to get rid of that date again.
+</details>
 
 Stuck? Ask Bob in **Ask** mode about the one thing that fails (see
 [Part 0](#prerequisites)).
