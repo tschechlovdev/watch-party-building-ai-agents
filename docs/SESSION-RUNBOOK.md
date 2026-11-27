@@ -43,7 +43,8 @@ background while you go on. Anyone who is not done by Part 3 uses Checkpoint 1.
   so their own copies never contain solutions Bob could find):
   `git push https://github.com/tschechlovdev/watch-party-building-ai-agents HEAD:checkpoint/1-kanban`
 - [ ] Test the catch-up commands from WORKSHOP.md once in a fresh copy.
-- [ ] Your own demo copy is set up (`./scripts/setup-bug-factory.sh`), with Checkpoint 2
+- [ ] Your own demo copy is set up (`./scripts/setup-bug-factory.sh`; `gh variable list`
+  shows `BOB_ENABLED true`), with Checkpoint 2
   merged into its `main`, and no open bug issues or fix PRs.
 - [ ] Bob IDE: a fresh conversation in *SDLC Orchestrator Agent* mode, font size large.
 - [ ] Browser tabs: your demo repo (Issues, Actions, Pull requests), the app on
@@ -111,8 +112,10 @@ after Part 5, or skip that slide.
    `When I tick a todo as done in the list view, it still shows up in "To Do" on the board.`
 2. Point out: it recognises a bug (Step 0 of the orchestrator skill), names the
    `file:line`, and changes no code.
-3. Answer "yes" when it offers to create the issue. Switch to the browser: the issue
-   has the label `bug`, and the Actions tab already shows a run.
+3. It asks who fixes it. Answer **2** (Bug Factory). Say: "No API key? Answer 1: the same
+   triage, engineer and reviewer agents fix it right here in the IDE, as subtasks."
+4. Switch to the browser: the issue has the label `bug`, and the Actions tab already
+   shows a triage run (only if `BOB_ENABLED=true` in your demo copy).
 
 ## Part 5 — live (10 min)
 

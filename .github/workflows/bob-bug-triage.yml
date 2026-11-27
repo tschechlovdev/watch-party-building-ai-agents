@@ -26,9 +26,10 @@ permissions:
 jobs:
   triage:
     # Skip Bug Finder issues (already well described), already triaged issues and PRs.
-    # Kill switch: set the repo variable BOB_ENABLED=false to stop all Bob runs.
+    # Opt-in: runs only when the repo variable BOB_ENABLED is true (set by
+    # scripts/setup-bug-factory.sh). Set it to false to stop all Bob runs.
     if: >-
-      vars.BOB_ENABLED != 'false' && (
+      vars.BOB_ENABLED == 'true' && (
         github.event_name == 'workflow_dispatch' || (
           github.event.label.name == 'bug' &&
           github.event.issue.pull_request == null &&

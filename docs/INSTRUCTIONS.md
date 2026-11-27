@@ -178,12 +178,11 @@ for the full flow.
 3. Click **Create**, choose the type **Inference**, and give it a name like
    `bug-factory-workshop`.
 4. **Copy the key now.** It is shown only once.
-5. Keep it in your shell for this session, without writing it into any file in the repo:
+5. Save it somewhere safe (a password manager), never in a file in the repo. You don't
+   need to `export` it: `./scripts/setup-bug-factory.sh` asks for it with hidden input.
+6. *(Optional)* Test the key with Bob Shell. Only for this test, put it into your shell:
    ```bash
-   read -rs BOB_API_KEY && export BOB_API_KEY   # paste, then press Enter
-   ```
-6. *(Optional)* Test the key with Bob Shell:
-   ```bash
+   read -rs BOB_API_KEY && export BOB_API_KEY   # paste, then press Enter (input hidden)
    npm install -g @ibm/bob            # needs Node.js 24+
    bob run --accept-license "Say hello"
    ```
@@ -257,7 +256,7 @@ Then try:
 | Goal | Command |
 |---|---|
 | Stop all Bob runs | `gh variable set BOB_ENABLED --body false` |
-| Turn them back on | `gh variable delete BOB_ENABLED` |
+| Turn them back on | `gh variable set BOB_ENABLED --body true` |
 | Lower the cap per Bob call | `gh variable set BOB_MAX_COST --body 1` |
 | Remove your key after the workshop | `gh secret delete BOB_API_KEY` |
 
@@ -291,7 +290,7 @@ owner or collaborator.
 | Bug Factory: `gh secret set` returns 403 | The wrong `gh` account is active. Run `gh auth status`, then `gh auth switch -h github.com -u <owner>`. |
 | Bug Factory: "Invalid or expired API key" in the Bob triage step | The secret value is wrong or the key was revoked. Set it again with `printf %s "$BOB_API_KEY" \| gh secret set BOB_API_KEY`. |
 | Bug Factory: "The repository secret BOB_API_KEY is not set" | Run `./scripts/setup-bug-factory.sh`. |
-| Bug Factory: no run starts when opening an issue | The issue needs the `bug` label, Actions must be enabled, and `BOB_ENABLED` must not be `false`. |
+| Bug Factory: no run starts when opening an issue | The issue needs the `bug` label, Actions must be enabled, and `BOB_ENABLED` must be `true` (the setup script sets it). |
 | Bug Factory: the fix run fails at "open PR" | Allow Actions to create PRs: Settings → Actions → General → *Allow GitHub Actions to create and approve pull requests*. |
 | Newly added custom modes not showing up | Ensure `.bob/custom_modes.yaml` is valid YAML and restart your Bob conversation/editor. |
 

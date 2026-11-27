@@ -8,7 +8,7 @@ tested pull request.
 
 - [ ] `main` still contains the demo bug: renaming a done todo makes it not done
       again. Check: `grep -n 'data.get("completed")' todo-app/backend/routes.py`
-- [ ] `gh secret list` shows `BOB_API_KEY`, and `BOB_ENABLED` is not `false`
+- [ ] `gh secret list` shows `BOB_API_KEY`, and `gh variable list` shows `BOB_ENABLED` `true`
 - [ ] No open fix PR for the demo bug (close the old ones)
 - [ ] Browser tabs ready: Issues, Actions, and a finished fix PR as a backup
       (for example #29)

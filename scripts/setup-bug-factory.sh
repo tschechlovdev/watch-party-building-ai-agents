@@ -12,7 +12,8 @@
 #      (from $BOB_API_KEY if set, otherwise gh asks for it with hidden input)
 #   4. allows GitHub Actions to create pull requests
 #   5. creates the labels the workflows use
-#   6. optionally opens the demo bug issue
+#   6. turns the Bug Factory on (repo variable BOB_ENABLED=true)
+#   7. optionally opens the demo bug issue
 #
 # Your API key is sent only to GitHub's encrypted secret store of YOUR repo.
 
@@ -49,7 +50,8 @@ if [ -n "${BOB_API_KEY:-}" ]; then
   printf %s "$BOB_API_KEY" | gh secret set BOB_API_KEY -R "$REPO"
   ok "stored from \$BOB_API_KEY"
 else
-  echo "  Paste your Bob API key (input is hidden):"
+  echo "  Paste your Bob API key and press Enter. The input is hidden: you will see nothing."
+  echo "  (Create the key at bob.ibm.com → API keys, type Inference. See docs/WORKSHOP.md, Part 5.)"
   gh secret set BOB_API_KEY -R "$REPO"
   ok "stored"
 fi
@@ -72,8 +74,12 @@ label bob-autofix-candidate bfdadc "Bob thinks this is a small, clear fix"
 label needs-info            fbca04 "Bob needs more information from the reporter"
 label bob-fix-failed        d93f0b "Bob could not deliver a verified fix"
 
+step "6. Turn the Bug Factory on"
+gh variable set BOB_ENABLED --body true -R "$REPO" >/dev/null
+ok "BOB_ENABLED=true"
+
 if $DEMO_ISSUE; then
-  step "6. Demo bug issue"
+  step "7. Demo bug issue"
   URL=$(gh issue create -R "$REPO" --label bug \
     --title "Done todos become undone when I edit them" \
     --body "I had a todo marked as done and fixed a typo in it. After saving it was suddenly not done anymore?? Happened twice now. Kinda annoying")
