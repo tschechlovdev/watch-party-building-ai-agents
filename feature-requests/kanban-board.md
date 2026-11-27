@@ -25,7 +25,7 @@ A Kanban board lets users see work-in-progress limits and move cards between sta
 4. `GET /api/todos` returns `status` on every item.
 5. The frontend renders three columns with the correct cards in each.
 6. Dragging a card to another column updates its status via `PUT /api/todos/<id>`.
-7. The `completed` boolean stays in sync: `status: "done"` sets `completed: true`; moving back sets it `false`.
+7. Moving a card to **Done** sets `completed: true`; moving it to another column sets `completed: false`.
 8. The list view still works unchanged.
 9. All existing backend tests continue to pass.
 
