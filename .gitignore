@@ -46,3 +46,7 @@ bob-task*.json
 
 # Bug report drafts written by the Orchestrator (local only)
 bug-reports/
+
+# Local presentation material and recordings (not part of the workshop repo)
+*.pptx
+.videos/

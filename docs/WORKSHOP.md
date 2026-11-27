@@ -83,27 +83,31 @@ cd my-agent-team
 With `gh` it is `gh repo clone <your-login>/my-agent-team`. GitHub Desktop works too
 (**Code → Open with GitHub Desktop**).
 
+> **Several GitHub accounts with SSH?** Use the host alias from your `~/.ssh/config`,
+> for example `git clone git@github-work:<your-login>/my-agent-team.git`.
+
 In Bob: **File → Open Folder…** and select `my-agent-team`. Start a **new**
 conversation and check that the mode list shows the *SDLC Orchestrator Agent*
 and the PM, Architect, Engineer and Reviewer agents.
 
-### Let Bob check your setup
+### Check your setup (1 minute)
 
-From here on, Bob can help you. Switch to **Code** mode and send:
-
-```text
-Read docs/WORKSHOP.md. Guide me through the rest of Part 0 step by step:
-check that uv, Node.js, git and gh are installed, run the backend tests,
-and tell me what is missing and how to install it. Ask before installing anything.
-```
-
-Bob runs the checks (approve each command), explains what is missing, and runs
-`uv run pytest` in `todo-app/backend` (expected: 17 passed). If you prefer to do it
-yourself:
+Run these in the `my-agent-team` folder. Each one should print a version, and the
+tests should end with **17 passed**:
 
 ```bash
-cd todo-app/backend && uv run pytest && cd ../..     # expected: 17 passed
+git --version && uv --version && node --version && gh --version
+cd todo-app/backend && uv run pytest -q && cd ../..
 ```
+
+**If a command fails**, ask Bob about that one problem only. In **Ask** mode, for example:
+
+```text
+"uv --version" fails with "command not found" on macOS. How do I install uv?
+```
+
+> Don't ask Bob to check the whole setup on its own. It works, but it runs one
+> command after another and easily takes 10+ minutes and a lot of context.
 
 ### Optional now, required in Part 5: set up the Bug Factory
 
