@@ -109,6 +109,19 @@ cd todo-app/backend && uv run pytest -q && cd ../..
 > Don't ask Bob to check the whole setup on its own. It works, but it runs one
 > command after another and easily takes 10+ minutes and a lot of context.
 
+### Optional: put the feature requests into GitHub
+
+The feature requests live as files in `feature-requests/`. If you want to work the way
+a real team does, from GitHub issues, turn them into issues in your copy (needs `gh`):
+
+```bash
+./scripts/create-feature-issues.sh --dry-run   # show what it would create
+./scripts/create-feature-issues.sh             # create one issue per feature, label "feature"
+```
+
+Running it twice creates no duplicates. Then you can start the orchestrator from an
+issue URL instead of a file (Parts 1 and 2).
+
 ### Optional now, required in Part 5: set up the Bug Factory
 
 ```bash
@@ -136,6 +149,10 @@ Reviewer one after another. They talk to each other only through one markdown fi
    ```text
    Please run the full workflow for feature-requests/kanban-board.md
    ```
+   If you created the issues in Part 0, give it the issue URL instead:
+   ```text
+   Please run the full workflow for https://github.com/<your-login>/my-agent-team/issues/<n>
+   ```
 2. Approve the steps Bob asks for. While it runs, open
    `feature-workflows/kanban-board-workflow.md` and watch each agent fill in its
    section. The `current-role:` field shows who is working.
@@ -150,6 +167,7 @@ Reviewer one after another. They talk to each other only through one markdown fi
    git add -A && git commit -m "feat: kanban board"
    git push -u origin feature/kanban-board
    gh pr create --base main --title "feat: kanban board" --body "Kanban board, built by the Bob SDLC team"
+   # started from an issue? add "Closes #<n>" to --body, so merging closes it
    gh pr merge --merge
    git switch main && git pull
    ```
@@ -178,12 +196,9 @@ into `main`, including a merge conflict or two.
 
 ### Do it yourself
 
-1. Turn the feature requests into GitHub issues, so the orchestrator can start from
-   an issue URL:
+1. If you haven't yet, turn the feature requests into GitHub issues (see Part 0):
    ```bash
-   for f in add-priorities add-due-dates add-search; do
-     gh issue create --title "Feature: $f" --body-file feature-requests/$f.md
-   done
+   ./scripts/create-feature-issues.sh
    ```
 2. Create one worktree per feature. Each is a separate folder with its own branch,
    sharing the same git history:
