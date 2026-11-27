@@ -34,11 +34,12 @@ your issues, pull requests and GitHub Actions runs (and your Bobcoins) stay your
 | [IBM Bob](https://bob.ibm.com) (IDE) | Bob opens and you are logged in | Part 1 |
 | Python 3.11+ with [`uv`](https://github.com/astral-sh/uv) | `uv --version` | Part 1 |
 | Node.js 18+ | `node --version` | Part 1 |
-| Git | `git --version` | Part 1 |
-| [GitHub CLI `gh`](https://cli.github.com), logged in (not preinstalled) | `gh auth status` | Part 0 |
+| Git | `git --version` | Part 0 |
+| [GitHub CLI `gh`](https://cli.github.com), logged in (not preinstalled) | `gh auth status` | Part 2 |
 | Bob API key of type *Inference* | You have the key saved | Part 5 |
 
-**Install `gh` before the session.** It is not part of macOS, Windows or Git:
+**Install `gh` before the session**, even though Parts 0 and 1 work without it. It is not
+part of macOS, Windows or Git:
 
 ```bash
 brew install gh                      # macOS
@@ -71,16 +72,38 @@ gh repo create my-agent-team --public \
 
 ### Clone *your* copy and open it in Bob
 
+On the page of your new repo, click **Code** and copy the HTTPS URL. Then clone it with
+plain git (no `gh` needed):
+
 ```bash
-gh repo clone <your-login>/my-agent-team
-# without gh: git clone https://github.com/<your-login>/my-agent-team.git
+git clone https://github.com/<your-login>/my-agent-team.git
 cd my-agent-team
-cd todo-app/backend && uv run pytest && cd ../..     # expected: 17 passed
 ```
+
+With `gh` it is `gh repo clone <your-login>/my-agent-team`. GitHub Desktop works too
+(**Code → Open with GitHub Desktop**).
 
 In Bob: **File → Open Folder…** and select `my-agent-team`. Start a **new**
 conversation and check that the mode list shows the *SDLC Orchestrator Agent*
 and the PM, Architect, Engineer and Reviewer agents.
+
+### Let Bob check your setup
+
+From here on, Bob can help you. Switch to **Code** mode and send:
+
+```text
+Read docs/WORKSHOP.md. Guide me through the rest of Part 0 step by step:
+check that uv, Node.js, git and gh are installed, run the backend tests,
+and tell me what is missing and how to install it. Ask before installing anything.
+```
+
+Bob runs the checks (approve each command), explains what is missing, and runs
+`uv run pytest` in `todo-app/backend` (expected: 17 passed). If you prefer to do it
+yourself:
+
+```bash
+cd todo-app/backend && uv run pytest && cd ../..     # expected: 17 passed
+```
 
 ### Optional now, required in Part 5: set up the Bug Factory
 
