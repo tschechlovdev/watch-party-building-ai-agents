@@ -34,11 +34,12 @@ your issues, pull requests and GitHub Actions runs (and your Bobcoins) stay your
 | [IBM Bob](https://bob.ibm.com) (IDE) | Bob opens and you are logged in | Part 1 |
 | Python 3.11+ with [`uv`](https://github.com/astral-sh/uv) | `uv --version` | Part 1 |
 | Node.js 18+ | `node --version` | Part 1 |
-| Git | `git --version` | Part 1 |
-| [GitHub CLI `gh`](https://cli.github.com), logged in (not preinstalled) | `gh auth status` | Part 0 |
+| Git | `git --version` | Part 0 |
+| [GitHub CLI `gh`](https://cli.github.com), logged in (not preinstalled) | `gh auth status` | Part 2 |
 | Bob API key of type *Inference* | You have the key saved | Part 5 |
 
-**Install `gh` before the session.** It is not part of macOS, Windows or Git:
+**Install `gh` before the session**, even though Parts 0 and 1 work without it. It is not
+part of macOS, Windows or Git:
 
 ```bash
 brew install gh                      # macOS
@@ -71,16 +72,55 @@ gh repo create my-agent-team --public \
 
 ### Clone *your* copy and open it in Bob
 
+On the page of your new repo, click **Code** and copy the HTTPS URL. Then clone it with
+plain git (no `gh` needed):
+
 ```bash
-gh repo clone <your-login>/my-agent-team
-# without gh: git clone https://github.com/<your-login>/my-agent-team.git
+git clone https://github.com/<your-login>/my-agent-team.git
 cd my-agent-team
-cd todo-app/backend && uv run pytest && cd ../..     # expected: 17 passed
 ```
+
+With `gh` it is `gh repo clone <your-login>/my-agent-team`. GitHub Desktop works too
+(**Code → Open with GitHub Desktop**).
+
+> **Several GitHub accounts with SSH?** Use the host alias from your `~/.ssh/config`,
+> for example `git clone git@github-work:<your-login>/my-agent-team.git`.
 
 In Bob: **File → Open Folder…** and select `my-agent-team`. Start a **new**
 conversation and check that the mode list shows the *SDLC Orchestrator Agent*
 and the PM, Architect, Engineer and Reviewer agents.
+
+### Check your setup (1 minute)
+
+Run these in the `my-agent-team` folder. Each one should print a version, and the
+tests should end with **17 passed**:
+
+```bash
+git --version && uv --version && node --version && gh --version
+cd todo-app/backend && uv run pytest -q && cd ../..
+```
+
+**If a command fails**, ask Bob about that one problem only. In **Ask** mode, for example:
+
+```text
+"uv --version" fails with "command not found" on macOS. How do I install uv?
+```
+
+> Don't ask Bob to check the whole setup on its own. It works, but it runs one
+> command after another and easily takes 10+ minutes and a lot of context.
+
+### Optional: put the feature requests into GitHub
+
+The feature requests live as files in `feature-requests/`. If you want to work the way
+a real team does, from GitHub issues, turn them into issues in your copy (needs `gh`):
+
+```bash
+./scripts/create-feature-issues.sh --dry-run   # show what it would create
+./scripts/create-feature-issues.sh             # create one issue per feature, label "feature"
+```
+
+Running it twice creates no duplicates. Then you can start the orchestrator from an
+issue URL instead of a file (Parts 1 and 2).
 
 ### Optional now, required in Part 5: set up the Bug Factory
 
@@ -109,6 +149,10 @@ Reviewer one after another. They talk to each other only through one markdown fi
    ```text
    Please run the full workflow for feature-requests/kanban-board.md
    ```
+   If you created the issues in Part 0, give it the issue URL instead:
+   ```text
+   Please run the full workflow for https://github.com/<your-login>/my-agent-team/issues/<n>
+   ```
 2. Approve the steps Bob asks for. While it runs, open
    `feature-workflows/kanban-board-workflow.md` and watch each agent fill in its
    section. The `current-role:` field shows who is working.
@@ -123,6 +167,7 @@ Reviewer one after another. They talk to each other only through one markdown fi
    git add -A && git commit -m "feat: kanban board"
    git push -u origin feature/kanban-board
    gh pr create --base main --title "feat: kanban board" --body "Kanban board, built by the Bob SDLC team"
+   # started from an issue? add "Closes #<n>" to --body, so merging closes it
    gh pr merge --merge
    git switch main && git pull
    ```
@@ -151,12 +196,9 @@ into `main`, including a merge conflict or two.
 
 ### Do it yourself
 
-1. Turn the feature requests into GitHub issues, so the orchestrator can start from
-   an issue URL:
+1. If you haven't yet, turn the feature requests into GitHub issues (see Part 0):
    ```bash
-   for f in add-priorities add-due-dates add-search; do
-     gh issue create --title "Feature: $f" --body-file feature-requests/$f.md
-   done
+   ./scripts/create-feature-issues.sh
    ```
 2. Create one worktree per feature. Each is a separate folder with its own branch,
    sharing the same git history:

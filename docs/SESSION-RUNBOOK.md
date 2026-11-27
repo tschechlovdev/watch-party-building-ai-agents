@@ -54,9 +54,11 @@ Put a small caption in one corner the whole time: **"Follow along: WORKSHOP.md, 
 | # | Shot | Show on screen | Say |
 |---|---|---|---|
 | 1 | GitHub repo page | **Use this template → Create a new repository**, leave *Include all branches* unticked | "Not clone, not fork: your own copy, so issues, Actions and Bobcoins stay yours." |
-| 2 | Terminal | `gh repo clone …`, `uv run pytest` → 17 passed | "The starting point: a small todo app with tests." |
+| 2 | Terminal | `git clone https://github.com/<you>/my-agent-team.git` | "Plain git is enough here." |
+| 2b | Terminal | The setup check from WORKSHOP.md Part 0 (versions + `uv run pytest -q` → 17 passed) | "One minute to check. If something is missing, ask Bob about that one thing." |
 | 3 | Bob | Open folder, mode list with the five SDLC agents | "The same team as last time: orchestrator plus four specialists." |
-| 4 | Bob | Orchestrator prompt: `Please run the full workflow for feature-requests/kanban-board.md` | "One prompt. Everything else is delegated." |
+| 3b | Terminal / GitHub (optional) | `./scripts/create-feature-issues.sh`, then the Issues tab with six `feature` issues | "Features come in as GitHub issues, like in a real team." |
+| 4 | Bob | Orchestrator prompt with the Kanban issue URL (or `feature-requests/kanban-board.md`) | "One prompt. Everything else is delegated." |
 | 5 | Split: Bob + workflow doc | `current-role:` switching pm → architect → engineer → reviewer; sections filling in | "They never talk to each other directly. One markdown file is the shared memory." |
 | 6 | Bob | Engineer running `uv run pytest`; Reviewer verdict *Approved* | "The reviewer can only read code, so it cannot fix things quietly." |
 | 7 | Browser | List view, then **Board**, drag a card to *Done* | "It works." (Don't tick a checkbox in the list here, that's Part 3.) |
@@ -68,7 +70,7 @@ Caption: **"Follow along: WORKSHOP.md, Part 2"**.
 
 | # | Shot | Show on screen | Say |
 |---|---|---|---|
-| 1 | Terminal | `gh issue create` for the features, the issue list | "Features come in as GitHub issues." |
+| 1 | GitHub | The `feature` issues created in Video 1 | "Features come in as GitHub issues." |
 | 2 | Terminal | `git worktree add …` ×3, then `ls ..` | "One folder per feature, one branch each, one shared history." |
 | 3 | Screen grid | Three or four Bob windows, each with the orchestrator and an issue URL | "Four teams working at the same time, without getting in each other's way." |
 | 4 | GitHub | Four PRs, all green | |
