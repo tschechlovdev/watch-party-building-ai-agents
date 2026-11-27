@@ -116,7 +116,8 @@ Run these steps **in order** before starting the PM subtask:
 
 1. **Persist feature request** — if the feature came from an inline description or
    GitHub issue, write it to `feature-requests/<slug>.md`. Skip if it is already a
-   file.
+   file. If it came from a GitHub issue, remember the issue number for the Final
+   Report.
 
 2. **Derive the slug** — lowercase the feature name, replace spaces and special
    characters with hyphens, remove leading/trailing hyphens.
@@ -141,7 +142,14 @@ Run these steps **in order** before starting the PM subtask:
 
 ## Pipeline Execution
 
-Run subtasks in sequence. Use `start_subtask` with the correct mode and a clear message.
+Run subtasks in sequence. Call the `start_subtask` tool with three parameters:
+`title` (for example "PM analysis"), `message` (below) and `mode` (the mode slug below).
+
+**Always set `mode`.** Without it the subtask runs in the default *Agent* mode, not
+as the specialist. **Never use `spawn_subagent` for a phase:** a subagent keeps the
+orchestrator's permissions, so the Engineer could not edit `todo-app/`. If
+`start_subtask` is not available, stop and tell the user: "The SDLC Orchestrator Agent
+mode needs the `subtask` group in `.bob/custom_modes.yaml`."
 
 ### PM subtask
 
@@ -227,6 +235,8 @@ When `current-role: done` is set in the workflow document, produce:
 🔍  Final Status: <Outcome line from workflow document>
 🧪  Tests: passed (confirmed by Engineer subtask)
 ➡️  Next step: create a pull request
+    git add -A && git commit -m "feat: <feature name>" && git push -u origin HEAD
+    gh pr create --base main --title "feat: <feature name>" --body "Closes #<issue>"
 
 ---
 
@@ -248,6 +258,10 @@ npm run dev
 1. …
 2. …
 ```
+
+In the pull request commands, keep `--body "Closes #<issue>"` only if the feature
+came from a GitHub issue (fill in its number, so merging the PR closes the issue).
+Otherwise use `--body "Built by the Bob SDLC team"`.
 
 The "What to click / test" steps must be concrete UI actions for a non-technical
 user, derived from the acceptance criteria in the workflow document.

@@ -14,7 +14,7 @@ works on its own: if you fall behind, you copy in a checkpoint from the workshop
 |---|---|---|
 | [0](#part-0--your-own-copy-of-the-repo) | Your own copy of the repo | GitHub account, Bob |
 | [1](#part-1--one-feature-the-kanban-board) | One feature: the Kanban board | Bob IDE |
-| [2](#part-2--features-in-parallel-with-git-worktrees) | Features in parallel with git worktrees | Bob IDE, `gh` |
+| [2](#part-2--features-in-parallel-with-git-worktrees) | Features in parallel with git worktrees | Bob IDE or Bob Shell, `gh` |
 | [3](#part-3--a-bug-appears) | A bug appears | Browser |
 | [4](#part-4--the-orchestrator-spots-the-bug) | The orchestrator spots the bug | Bob IDE, `gh` |
 | [5](#part-5--the-bug-factory-fixes-it) | The Bug Factory fixes it | Bob API key, `gh` |
@@ -162,12 +162,14 @@ Reviewer one after another. They talk to each other only through one markdown fi
    cd todo-app/frontend && npm install && npm run dev   # terminal 2, port 5173
    ```
    Open <http://localhost:5173>, switch to **Board**, drag a card to *Done*.
-4. Open a pull request and merge it into **your** `main`:
+4. Open a pull request and merge it into **your** `main`. The orchestrator's final
+   report prints these commands with your issue number filled in. `Closes #<n>`
+   closes the issue when the PR is merged:
    ```bash
    git add -A && git commit -m "feat: kanban board"
    git push -u origin feature/kanban-board
-   gh pr create --base main --title "feat: kanban board" --body "Kanban board, built by the Bob SDLC team"
-   # started from an issue? add "Closes #<n>" to --body, so merging closes it
+   gh pr create --base main --title "feat: kanban board" --body "Closes #<n>"
+   # <n> = the Kanban issue number. No issues created? Use --body "Kanban board" instead.
    gh pr merge --merge
    git switch main && git pull
    ```
@@ -175,7 +177,8 @@ Reviewer one after another. They talk to each other only through one markdown fi
 The full run takes about 15–25 minutes, depending on how many questions Bob asks.
 
 > **The Engineer says it may not edit `todo-app/`?** Then its subtask ran with the
-> orchestrator's permissions. Switch to **Engineer Agent** yourself and send
+> orchestrator's permissions (an older copy of `.bob/custom_modes.yaml` without the
+> `subtask` group in the orchestrator mode). Switch to **Engineer Agent** yourself and send
 > `Please implement feature-workflows/kanban-board-workflow.md`. When it is done,
 > switch back to **SDLC Orchestrator Agent** and send `continue`.
 
@@ -195,9 +198,9 @@ git commit -m "Checkpoint 1: Kanban board" && git push
 
 ## Part 2 — Features in parallel with git worktrees
 
-**Watch (video):** four features from four GitHub issues, built at the same time in
-four Bob windows, each in its own git worktree. Four pull requests, then merged
-into `main`, including a merge conflict or two.
+**Watch (video):** three features from three GitHub issues, built at the same time,
+each in its own git worktree with its own Bob. Three pull requests, then merged into
+`main`, including a merge conflict or two.
 
 ### Do it yourself
 
@@ -212,22 +215,48 @@ into `main`, including a merge conflict or two.
    git worktree add ../my-agent-team-due-dates  -b feature/add-due-dates
    git worktree add ../my-agent-team-search     -b feature/add-search
    ```
-3. Open each folder in its **own Bob window** (File → Open Folder). In each window,
-   switch to **SDLC Orchestrator Agent** and pass the issue URL:
+3. Start one Bob per folder and pass the issue URL from **your** repo:
    ```text
    Please run the full workflow for https://github.com/<your-login>/my-agent-team/issues/<n>
    ```
+   - **Bob IDE:** open each folder in its own window (File → New Window, then Open
+     Folder) and switch to **SDLC Orchestrator Agent**.
+   - **Bob Shell** (one terminal tab per folder):
+     ```bash
+     cd ../my-agent-team-priorities
+     bob chat --mode orchestrator-agent "Please run the full workflow for https://github.com/<your-login>/my-agent-team/issues/<n>"
+     ```
+     Bob Shell is not part of the IDE. Install it once with `npm install -g @ibm/bob`
+     (needs Node.js 24+). The first start asks you to accept the license and to log in.
 4. When a pipeline is done, open its PR from inside that worktree:
    ```bash
    git add -A && git commit -m "feat: <feature>" && git push -u origin HEAD
    gh pr create --base main --title "feat: <feature>" --body "Closes #<n>"
    ```
 5. Merge the PRs one after another. When GitHub reports a conflict (usually in
-   `App.jsx`, `routes.py` or `models.py`), resolve it locally, or ask Bob in
-   *Code* mode: "Resolve the merge conflicts in this branch, keep both features."
-6. Clean up: `git worktree remove ../my-agent-team-priorities` (and the others).
+   `App.jsx`, `routes.py` or `models.py`), go to that worktree and merge `main` in:
+   ```bash
+   git fetch origin && git merge origin/main
+   ```
+   Resolve the conflicts by hand, or ask Bob there in *Agent* mode: "Resolve the merge
+   conflicts in this branch, keep both features." Then `git push` and merge the PR.
+6. Tidy up the UI. Each feature was built without knowing the others, so each one
+   added its own filter row above the list. Ask Bob once, on `main`, in *Agent* mode:
+   ```text
+   The list view has several filter rows stacked on top of each other, one per
+   feature. Combine search, status, priority and due-date filters into one compact
+   toolbar. Only change the layout and styling in the frontend, no behaviour.
+   ```
+   Commit and push it like any other change (or open a PR).
+7. Clean up the worktrees and their local branches:
+   ```bash
+   git worktree remove ../my-agent-team-priorities
+   git worktree remove ../my-agent-team-due-dates
+   git worktree remove ../my-agent-team-search
+   git branch -d feature/add-priorities feature/add-due-dates feature/add-search
+   ```
 
-> 💡 Running four pipelines at once uses four times the Bobcoins. One or two
+> 💡 Running three pipelines at once uses three times the Bobcoins. One or two
 > parallel features are enough to see the idea.
 
 ✅ **Checkpoint 2:** `main` has Kanban plus the other features.
@@ -351,4 +380,6 @@ Nothing to do here. Keep your repo: everything you built carries over.
 ```bash
 gh variable set BOB_ENABLED --body false   # stop all Bob runs
 gh secret delete BOB_API_KEY               # remove your key
+git worktree list                          # any worktree folders left from Part 2?
+git worktree remove ../my-agent-team-<name>   # for each one, then: git worktree prune
 ```
