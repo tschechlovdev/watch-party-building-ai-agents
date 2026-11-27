@@ -27,6 +27,9 @@ background while you go on. Anyone who is not done by Part 3 uses Checkpoint 1.
 ## Before the session
 
 - [ ] **Record Video 1 and Video 2** (shot lists below). Video 3 is optional.
+- [ ] **Refresh the checkpoints after doc changes.** The catch-up copies *all* files of a
+  checkpoint, including `docs/` and `.bob/`. If `main` changed after a checkpoint was
+  made, rebuild it: take `main` and put the feature code from the checkpoint on top.
 - [ ] **Create the checkpoint branches** in the workshop repo from the recordings:
   - `checkpoint/1-kanban` = `main` + the Kanban PR from Video 1
   - `checkpoint/2-features` = `main` + all feature PRs from Video 2, merged
@@ -126,6 +129,7 @@ modes, skills and handoff files off the GitHub runner.
 | Problem | What to do |
 |---|---|
 | A participant's Kanban run is slow or fails | Checkpoint 1 (WORKSHOP.md, Part 1) |
+| The Engineer subtask may not edit `todo-app/` | Switch to *Engineer Agent* by hand, then `continue` in the orchestrator (WORKSHOP.md, Part 1) |
 | Orchestrator starts the feature pipeline instead of reporting a bug | Stop it, start a new conversation and add "This is a bug." to the prompt |
 | No triage run starts | `gh workflow run bob-bug-triage.yml -f issue-number=<n>` |
 | Fix run is slow | Show the backup PR, come back to the live one in Q&A |

@@ -174,6 +174,11 @@ Reviewer one after another. They talk to each other only through one markdown fi
 
 The full run takes about 15–25 minutes, depending on how many questions Bob asks.
 
+> **The Engineer says it may not edit `todo-app/`?** Then its subtask ran with the
+> orchestrator's permissions. Switch to **Engineer Agent** yourself and send
+> `Please implement feature-workflows/kanban-board-workflow.md`. When it is done,
+> switch back to **SDLC Orchestrator Agent** and send `continue`.
+
 ✅ **Checkpoint 1:** `main` in your repo has the Kanban board.
 
 **Catch up:** copy the prepared result onto your `main`. This fetches the checkpoint from
